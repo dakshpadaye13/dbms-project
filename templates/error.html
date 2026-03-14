@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="error-wrap">
+  <div style="text-align:center">
+    <div class="error-code">{{ code }}</div>
+    <h2 style="font-size:1.5rem;margin-bottom:10px">{{ message }}</h2>
+    <p style="color:var(--text-secondary);margin-bottom:32px">Something went wrong. Don't worry, let's get you back on track.</p>
+    <a href="{{ url_for('main.landing') }}" class="btn btn-primary btn-lg">🏠 Go Home</a>
+  </div>
+</div>
+{% endblock %}
+{% block show_footer %}{% endblock %}

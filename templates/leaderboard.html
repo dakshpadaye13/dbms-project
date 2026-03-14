@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="leaderboard-wrap">
+  <div class="dashboard-header animate-fadeInUp">
+    <span class="section-tag">🏆 Rankings</span>
+    <h1>Global <span class="gradient-text">Leaderboard</span></h1>
+    <p style="color:var(--text-secondary)">Your rank: <strong style="color:var(--amber)">#{{ user_rank }}</strong> with <strong style="color:var(--purple-light)">{{ current_user.total_points }} pts</strong></p>
+  </div>
+
+  <!-- Top 3 Podium -->
+  {% if board | length >= 3 %}
+  <div style="display:flex;justify-content:center;align-items:flex-end;gap:16px;margin-bottom:48px" class="animate-fadeInUp">
+    <!-- 2nd place -->
+    <div style="text-align:center">
+      <div class="lb-avatar" style="width:56px;height:56px;font-size:1.2rem;margin:0 auto 10px;border:2px solid #94a3b8">{{ (board[1].username|upper)[0] }}</div>
+      <div style="font-size:0.9rem;font-weight:700">{{ board[1].username }}</div>
+      <div style="color:var(--text-muted);font-size:0.78rem">{{ board[1].total_points }} pts</div>
+      <div style="background:rgba(148,163,184,0.3);border-radius:8px 8px 0 0;margin-top:12px;height:80px;width:90px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;border:1px solid rgba(148,163,184,0.4)">2</div>
+    </div>
+    <!-- 1st place -->
+    <div style="text-align:center">
+      <div style="font-size:1.5rem;margin-bottom:4px">👑</div>
+      <div class="lb-avatar" style="width:70px;height:70px;font-size:1.5rem;margin:0 auto 10px;border:3px solid #f59e0b;box-shadow:0 0 20px rgba(245,158,11,0.5)">{{ (board[0].username|upper)[0] }}</div>
+      <div style="font-size:1.1rem;font-weight:700">{{ board[0].username }}</div>
+      <div style="color:var(--amber);font-size:0.88rem;font-weight:600">{{ board[0].total_points }} pts</div>
+      <div style="background:rgba(245,158,11,0.2);border-radius:8px 8px 0 0;margin-top:12px;height:110px;width:100px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;border:1px solid rgba(245,158,11,0.5);color:var(--amber)">1</div>
+    </div>
+    <!-- 3rd place -->
+    <div style="text-align:center">
+      <div class="lb-avatar" style="width:52px;height:52px;font-size:1.1rem;margin:0 auto 10px;border:2px solid #b45309">{{ (board[2].username|upper)[0] }}</div>
+      <div style="font-size:0.85rem;font-weight:700">{{ board[2].username }}</div>
+      <div style="color:var(--text-muted);font-size:0.75rem">{{ board[2].total_points }} pts</div>
+      <div style="background:rgba(180,83,9,0.2);border-radius:8px 8px 0 0;margin-top:12px;height:65px;width:84px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;border:1px solid rgba(180,83,9,0.4)">3</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Full Rankings -->
+  <div class="stagger-children">
+    {% for player in board %}
+    <div class="lb-row {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %} {% if player.id == current_user.id %}current-user-row{% endif %}">
+      <div class="lb-rank">
+        {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+      </div>
+      <div class="lb-user">
+        <div class="lb-avatar">{{ (player.username|upper)[0] }}</div>
+        <div>
+          <div class="lb-username">
+            {{ player.username }}
+            {% if player.id == current_user.id %}<span style="font-size:0.75rem;color:var(--purple-light);margin-left:6px">(You)</span>{% endif %}
+          </div>
+          <div class="lb-level">Level {{ player.current_level }} · {{ player.total_games or 0 }} games</div>
+        </div>
+      </div>
+      <div class="lb-points">⚡ {{ player.total_points }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+.current-user-row { border-color: rgba(139,92,246,0.5) !important; background: rgba(124,58,237,0.07) !important; }
+</style>
+{% endblock %}

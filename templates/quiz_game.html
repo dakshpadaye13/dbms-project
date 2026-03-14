@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="quiz-wrap">
+  <!-- Quiz Header -->
+  <div class="quiz-header animate-fadeInUp">
+    <div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px">{{ quiz.subject_icon }} {{ quiz.subject_name }}</div>
+      <h1 style="font-size:1.5rem;font-weight:700">{{ quiz.title }}</h1>
+    </div>
+    <div class="quiz-timer" id="quizTimer">{{ quiz.time_limit // 60 }}:00</div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div style="margin-bottom:28px">
+    <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text-muted);margin-bottom:8px">
+      <span>Question <span id="currentQ">1</span> of <span id="totalQ">{{ questions | length }}</span></span>
+      <span id="correctCount" style="color:var(--green)">0 correct</span>
+    </div>
+    <div class="progress-bar-wrap" style="height:6px">
+      <div class="progress-bar-fill" id="quizProgress" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Question Display Area -->
+  <div id="quizArea">
+    <!-- Questions rendered by JS -->
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div style="display:flex;justify-content:space-between;margin-top:24px" id="quizControls">
+    <button class="btn btn-ghost" id="prevBtn" onclick="prevQuestion()" disabled>← Previous</button>
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+    <button class="btn btn-success" id="submitBtn" onclick="submitQuiz()" style="display:none">Submit Quiz ✓</button>
+  </div>
+</div>
+
+<!-- Results Modal -->
+<div class="modal-overlay" id="resultsModal">
+  <div class="modal-box animate-fadeInUp">
+    <div style="font-size:3rem;margin-bottom:10px" id="resultEmoji">🎉</div>
+    <div class="score-ring" id="scoreRing" style="--pct:0deg">
+      <span id="scorePercent">0%</span>
+    </div>
+    <h2 style="margin-bottom:8px" id="resultTitle">Quiz Complete!</h2>
+    <p style="color:var(--text-secondary);margin-bottom:24px" id="resultSub"></p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px">
+      <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);padding:14px">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--green)" id="resFinal">0</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">Score</div>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);padding:14px">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--blue)" id="resCorrect">0/0</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">Correct</div>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,0.04);border-radius:var(--radius-md);padding:14px">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--cyan)" id="resTime">0s</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">Time</div>
+      </div>
+    </div>
+
+    <!-- Badges earned -->
+    <div id="badgesEarned" style="margin-bottom:24px;display:none">
+      <p style="color:var(--amber);font-size:0.9rem;font-weight:600;margin-bottom:8px">🏅 New Badge(s) Earned!</p>
+      <div id="badgesList" style="display:flex;justify-content:center;flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="{{ url_for('student.dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+      <button class="btn btn-primary" onclick="location.reload()">Play Again 🔄</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Quiz Data (injected from server) ──────────────────────────
+const QUIZ_ID    = {{ quiz.id }};
+const TIME_LIMIT = {{ quiz.time_limit }};
+const QUESTIONS  = {{ questions_json | safe }};
+
+// ── State ─────────────────────────────────────────────────────
+let currentIdx = 0;
+let answers    = {};     // {question_id: {selected, time}}
+let startTimes = {};    // {question_id: Date.now()}
+let quizStartTime = Date.now();
+let timerInterval, timeLeft = TIME_LIMIT;
+let submitted = false;
+
+// ── Render Question ───────────────────────────────────────────
+function renderQuestion(idx) {
+  const q = QUESTIONS[idx];
+  if (!q) return;
+  startTimes[q.id] = Date.now();
+
+  const selected = answers[q.id]?.selected || '';
+  const opts     = ['A','B','C','D'];
+  const optTexts = [q.option_a, q.option_b, q.option_c, q.option_d];
+
+  let optionsHtml = optTexts.map((text, i) => {
+    const letter = opts[i];
+    const selCls = selected === letter ? 'selected' : '';
+    return `<button class="option-btn ${selCls}" id="opt${letter}"
+              onclick="selectAnswer('${q.id}', '${letter}', ${q.option_a ? 'false' : 'true'})">
+              <span class="option-label">${letter}</span> ${text}
+            </button>`;
+  }).join('');
+
+  document.getElementById('quizArea').innerHTML = `
+    <div class="question-card animate-fadeInUp">
+      <div class="question-num">Question ${idx + 1} of ${QUESTIONS.length}</div>
+      <div class="question-text">${q.question}</div>
+      <div class="options-grid">${optionsHtml}</div>
+      ${q.explanation && selected ? `<div style="margin-top:20px;padding:14px 18px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:var(--radius-md);font-size:0.88rem;color:var(--blue-light)">💡 ${q.explanation}</div>` : ''}
+    </div>`;
+
+  // Update nav
+  document.getElementById('currentQ').textContent = idx + 1;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  const isLast = idx === QUESTIONS.length - 1;
+  document.getElementById('nextBtn').style.display   = isLast ? 'none' : 'inline-flex';
+  document.getElementById('submitBtn').style.display = isLast ? 'inline-flex' : 'none';
+
+  // Progress
+  const pct = ((idx + 1) / QUESTIONS.length) * 100;
+  document.getElementById('quizProgress').style.width = pct + '%';
+}
+
+function selectAnswer(questionId, letter) {
+  const q = QUESTIONS.find(q => q.id == questionId);
+  const timeTaken = Math.round((Date.now() - (startTimes[questionId] || Date.now())) / 1000);
+  answers[questionId] = { selected: letter, time: timeTaken };
+
+  // Highlight selected
+  ['A','B','C','D'].forEach(l => {
+    const btn = document.getElementById('opt' + l);
+    if (btn) btn.classList.toggle('selected', l === letter);
+  });
+}
+
+function nextQuestion() {
+  if (currentIdx < QUESTIONS.length - 1) { currentIdx++; renderQuestion(currentIdx); }
+}
+function prevQuestion() {
+  if (currentIdx > 0) { currentIdx--; renderQuestion(currentIdx); }
+}
+
+// ── Timer ─────────────────────────────────────────────────────
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const mins = Math.floor(timeLeft / 60).toString().padStart(2,'0');
+    const secs = (timeLeft % 60).toString().padStart(2,'0');
+    const el   = document.getElementById('quizTimer');
+    el.textContent = `${mins}:${secs}`;
+    if (timeLeft <= 30) el.classList.add('urgent');
+    if (timeLeft <= 0 && !submitted) submitQuiz();
+  }, 1000);
+}
+
+// ── Submit ────────────────────────────────────────────────────
+async function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+  const totalTime = Math.round((Date.now() - quizStartTime) / 1000);
+
+  const payload = {
+    quiz_id:    QUIZ_ID,
+    total_time: totalTime,
+    answers: QUESTIONS.map(q => ({
+      question_id: q.id,
+      selected:   answers[q.id]?.selected || '',
+      time:       answers[q.id]?.time || 0
+    }))
+  };
+
+  const res  = await fetch('/api/quiz/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  showResults(data, totalTime);
+}
+
+function showResults(data, totalTime) {
+  const pct = Math.round(data.accuracy);
+  document.getElementById('scorePercent').textContent = pct + '%';
+  document.getElementById('scoreRing').style.setProperty('--pct', `${pct * 3.6}deg`);
+  document.getElementById('resFinal').textContent    = '+' + data.score + ' pts';
+  document.getElementById('resCorrect').textContent  = `${data.correct}/${data.total}`;
+  document.getElementById('resTime').textContent     = `${totalTime}s`;
+  document.getElementById('resultTitle').textContent = pct >= 80 ? '🌟 Excellent!' : pct >= 50 ? '👍 Good Job!' : '📚 Keep Practicing!';
+  document.getElementById('resultSub').textContent   = `You scored ${data.score} points  • Accuracy: ${data.accuracy}%`;
+  document.getElementById('resultEmoji').textContent = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '😊' : '💪';
+
+  const badges = data.gamification?.new_badges || [];
+  if (badges.length > 0) {
+    document.getElementById('badgesEarned').style.display = 'block';
+    document.getElementById('badgesList').innerHTML =
+      [...new Set(badges)].map(b => `<span class="badge-chip">🏅 ${b}</span>`).join('');
+  }
+
+  document.getElementById('resultsModal').classList.add('open');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderQuestion(0);
+startTimer();
+</script>
+{% endblock %}
+{% block show_footer %}{% endblock %}

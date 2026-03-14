@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}LearnQuest AI{% endblock %} | Gamified Learning Platform</title>
+  <meta name="description" content="{% block meta_desc %}LearnQuest AI - Turn learning into an interactive game experience with quizzes, puzzles, and challenges.{% endblock %}">
+  <!-- Google Fonts: Space Grotesk + Outfit + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────── -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="{{ url_for('main.landing') }}" class="nav-logo">⚡ LearnQuest AI</a>
+
+    {% if session.get('user_id') %}
+    <!-- Logged-in navigation -->
+    <ul class="nav-links">
+      <li><a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">Dashboard</a></li>
+      <li><a href="{{ url_for('student.games') }}"     class="nav-link {% if 'game' in request.endpoint %}active{% endif %}">Games</a></li>
+      <li><a href="{{ url_for('student.leaderboard') }}" class="nav-link">Leaderboard</a></li>
+      {% if session.get('role') == 'admin' %}
+      <li><a href="{{ url_for('admin.panel') }}" class="nav-link" style="color:var(--amber)">⚙ Admin</a></li>
+      {% endif %}
+    </ul>
+    <div class="nav-actions">
+      <div class="xp-badge">⚡ <span id="nav-points">{{ session.get('points', 0) }}</span> pts</div>
+      <div class="nav-dropdown">
+        <div class="nav-avatar">{{ (session.get('username', 'U') | upper)[0] }}</div>
+        <div class="dropdown-menu">
+          <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+            <div style="font-weight:700;font-size:0.9rem;color:#f1f5f9">{{ session.get('username') }}</div>
+            <div style="font-size:0.78rem;color:#64748b">Level {{ session.get('level', 1) }}</div>
+          </div>
+          <a href="{{ url_for('student.profile') }}"  class="dropdown-item">👤 Profile</a>
+          <a href="{{ url_for('student.dashboard') }}" class="dropdown-item">📊 Dashboard</a>
+          <div class="dropdown-divider"></div>
+          <a href="{{ url_for('auth.logout') }}" class="dropdown-item" style="color:#fca5a5">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- Guest navigation -->
+    <ul class="nav-links">
+      <li><a href="#features"     class="nav-link">Features</a></li>
+      <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+      <li><a href="#team"         class="nav-link">Team</a></li>
+      <li><a href="#faq"          class="nav-link">FAQ</a></li>
+      <li><a href="#contact"      class="nav-link">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="{{ url_for('auth.login') }}"  class="btn btn-ghost btn-sm">Login</a>
+      <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-sm">Get Started →</a>
+    </div>
+    {% endif %}
+
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  {% if session.get('user_id') %}
+  <a href="{{ url_for('student.dashboard') }}" class="nav-link">Dashboard</a>
+  <a href="{{ url_for('student.games') }}"     class="nav-link">Games</a>
+  <a href="{{ url_for('student.leaderboard') }}" class="nav-link">Leaderboard</a>
+  <a href="{{ url_for('student.profile') }}"   class="nav-link">Profile</a>
+  <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm">Logout</a>
+  </div>
+  {% else %}
+  <a href="{{ url_for('auth.login') }}"  class="btn btn-ghost btn-sm">Login</a>
+  <a href="{{ url_for('auth.signup') }}" class="btn btn-primary">Get Started Free →</a>
+  {% endif %}
+</div>
+
+<!-- ── FLASH MESSAGES ─────────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {{ message }}
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:inherit;margin-left:10px;opacity:0.7;font-size:1rem">&times;</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── PAGE CONTENT ───────────────────────────────────────── -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+{% block show_footer %}
+<footer>
+  <div class="container">
+    <div class="footer-logo">⚡ LearnQuest AI</div>
+    <p style="color:#475569;font-size:0.88rem;margin-bottom:20px">Turning learning into an epic adventure. Play. Learn. Level Up.</p>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+      <a href="{{ url_for('auth.signup') }}">Sign Up Free</a>
+    </div>
+    <div class="neon-line" style="margin:24px auto;max-width:300px"></div>
+    <p class="footer-copy">© 2024 LearnQuest AI · Built with ❤ and Python</p>
+  </div>
+</footer>
+{% endblock %}
+
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Stagger children observer -->
+<script>
+(function() {
+  const staggerObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); staggerObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.stagger-children').forEach(el => staggerObs.observe(el));
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Puzzle - {{ puzzle.title }}{% endblock %}
+
+{% block content %}
+<div class="puzzle-wrap">
+  <!-- Header -->
+  <div class="animate-fadeInUp" style="margin-bottom:30px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px">{{ puzzle.subject_icon }} {{ puzzle.subject_name }}</div>
+        <h1 style="font-size:1.5rem;font-weight:700">{{ puzzle.title }}</h1>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px">{{ puzzle.description }}</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-code);color:var(--cyan)" id="puzzleTimer">00:00</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">Time Elapsed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score display -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px 20px;background:rgba(124,58,237,0.1);border:1px solid var(--border-glow);border-radius:var(--radius-md)">
+    <span style="color:var(--text-secondary);font-size:0.9rem">Progress:</span>
+    <span id="puzzleScore" style="font-size:1.1rem;font-weight:700;color:var(--purple-light)">0 / {{ puzzle.points }} pts</span>
+  </div>
+
+  <!-- Puzzle Board (rendered by JS) -->
+  <div id="puzzleBoard" class="animate-fadeInUp" style="animation-delay:0.2s"></div>
+
+  <!-- Submit Button -->
+  <div style="text-align:center;margin-top:32px">
+    <button class="btn btn-primary btn-lg" onclick="checkAnswers()" id="checkBtn">
+      Check Answers ✓
+    </button>
+  </div>
+</div>
+
+<!-- Results Modal -->
+<div class="modal-overlay" id="puzzleModal">
+  <div class="modal-box">
+    <div style="font-size:3.5rem;margin-bottom:16px" id="puzzleResultEmoji">🧩</div>
+    <h2 id="puzzleResultTitle">Puzzle Complete!</h2>
+    <p style="color:var(--text-secondary);margin:12px 0 28px" id="puzzleResultSub"></p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="{{ url_for('student.games') }}"     class="btn btn-ghost">← Games</a>
+      <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Dashboard 🏠</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const PUZZLE_ID   = {{ puzzle.id }};
+const PUZZLE_TYPE = "{{ puzzle.puzzle_type }}";
+const MAX_SCORE   = {{ puzzle.points }};
+const PUZZLE_DATA = {{ puzzle_json | safe }};
+
+let startTime = Date.now();
+let timerInterval = setInterval(updateTimer, 1000);
+let userAnswers   = {};
+
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const m = Math.floor(elapsed/60).toString().padStart(2,'0');
+  const s = (elapsed%60).toString().padStart(2,'0');
+  document.getElementById('puzzleTimer').textContent = `${m}:${s}`;
+}
+
+// ── Concept Match Puzzle ───────────────────────────────────────
+function renderConceptMatch() {
+  const pairs  = PUZZLE_DATA.pairs || [];
+  const terms  = pairs.map(p => p.term);
+  const defs   = [...pairs.map(p => p.definition)].sort(() => Math.random() - 0.5);
+
+  let html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div>
+        <h4 style="color:var(--text-muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px">Terms</h4>
+        ${terms.map((t,i) => `
+          <div class="drag-item" draggable="true" data-term="${t}" id="term_${i}"
+               ondragstart="dragStart(event,'${t}')">
+            ${t}
+          </div>`).join('')}
+      </div>
+      <div>
+        <h4 style="color:var(--text-muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px">Definitions</h4>
+        ${defs.map((d,i) => `
+          <div class="drop-zone" id="drop_${i}"
+               ondragover="event.preventDefault();this.classList.add('over')"
+               ondragleave="this.classList.remove('over')"
+               ondrop="dropTerm(event,'${d}',this)">
+            <div style="font-size:0.88rem;color:var(--text-secondary);padding:8px 4px">${d}</div>
+            <div class="drop-zone-label" id="dropLabel_${i}">Drop term here</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  document.getElementById('puzzleBoard').innerHTML = html;
+}
+
+let draggedTerm = null;
+function dragStart(event, term) { draggedTerm = term; event.dataTransfer.setData('text', term); }
+function dropTerm(event, definition, zone) {
+  event.preventDefault(); zone.classList.remove('over');
+  if (!draggedTerm) return;
+  const label = zone.querySelector('.drop-zone-label');
+  label.textContent = draggedTerm;
+  label.style.cssText = 'color:var(--purple-light);font-weight:600;background:rgba(124,58,237,0.15);padding:8px 12px;border-radius:var(--radius-sm)';
+  userAnswers[definition] = draggedTerm;
+  draggedTerm = null;
+}
+
+// ── Drag & Drop Category Puzzle ───────────────────────────────
+function renderDragDrop() {
+  const categories = PUZZLE_DATA.categories || [];
+  const items      = [...(PUZZLE_DATA.items || [])].sort(() => Math.random() - 0.5);
+
+  let html = `
+    <div style="margin-bottom:24px">
+      <h4 style="color:var(--text-muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px">Items to Sort</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:10px" id="itemsBank">
+        ${items.map(item => `
+          <div class="drag-item" draggable="true" data-item="${item.text}"
+               ondragstart="dragStart(event,'${item.text}')">
+            ${item.text}
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(categories.length,3)},1fr);gap:16px">
+      ${categories.map(cat => `
+        <div class="puzzle-column" id="cat_${cat}"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="dropToCategory(event,'${cat}',this)">
+          <h4>${cat}</h4>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('puzzleBoard').innerHTML = html;
+}
+
+function dropToCategory(event, category, zone) {
+  event.preventDefault(); zone.classList.remove('over');
+  if (!draggedTerm) return;
+  const item = document.createElement('div');
+  item.className     = 'drag-item';
+  item.textContent   = draggedTerm;
+  item.draggable     = true;
+  item.dataset.item  = draggedTerm;
+  item.ondragstart   = e => dragStart(e, draggedTerm);
+  zone.appendChild(item);
+  userAnswers[draggedTerm] = category;
+  // Remove from bank
+  const bank = document.querySelector(`[data-item="${draggedTerm}"]`);
+  if (bank && bank.closest('#itemsBank')) bank.remove();
+  draggedTerm = null;
+}
+
+// ── Check Answers ─────────────────────────────────────────────
+function checkAnswers() {
+  clearInterval(timerInterval);
+  const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+  let correct = 0, total = 0;
+
+  if (PUZZLE_TYPE === 'concept_match') {
+    const pairs = PUZZLE_DATA.pairs || [];
+    pairs.forEach(p => {
+      total++;
+      if (userAnswers[p.definition] === p.term) correct++;
+    });
+  } else {
+    const items = PUZZLE_DATA.items || [];
+    items.forEach(item => {
+      total++;
+      if (userAnswers[item.text] === item.category) correct++;
+    });
+  }
+
+  const score = Math.round((correct / Math.max(total,1)) * MAX_SCORE);
+  submitPuzzle(score, timeTaken);
+}
+
+async function submitPuzzle(score, timeTaken) {
+  const res  = await fetch('/api/puzzle/submit', {
+    method: 'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ puzzle_id: PUZZLE_ID, score, max_score: MAX_SCORE, time_taken: timeTaken })
+  });
+  const data = await res.json();
+  const pct  = Math.round((score / MAX_SCORE) * 100);
+  document.getElementById('puzzleResultEmoji').textContent = pct >= 80 ? '🏆' : pct >= 50 ? '🎉' : '💪';
+  document.getElementById('puzzleResultTitle').textContent = pct >= 80 ? 'Excellent Work!' : pct >= 50 ? 'Good Effort!' : 'Keep Practicing!';
+  document.getElementById('puzzleResultSub').textContent   = `You earned +${score} points (${pct}% correct)`;
+  document.getElementById('puzzleModal').classList.add('open');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+if (PUZZLE_TYPE === 'concept_match') renderConceptMatch();
+else renderDragDrop();
+</script>
+{% endblock %}
+{% block show_footer %}{% endblock %}

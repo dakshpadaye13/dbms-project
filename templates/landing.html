@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}LearnQuest AI - Turn Learning Into a Game{% endblock %}
+{% block meta_desc %}LearnQuest AI is a gamified learning platform where students master academic concepts through
+quizzes, puzzles, and interactive challenges.{% endblock %}
+
+{% block content %}
+
+<!-- ════════════════════════════════════════════════════════════
+    HERO SECTION
+════════════════════════════════════════════════════════════ -->
+<section class="hero-section" id="home">
+  <div class="grid-bg"></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+
+  <div class="container"
+    style="padding-top:120px;padding-bottom:100px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;position:relative;z-index:1">
+    <div class="animate-fadeInUp">
+      <div class="section-tag">⚡ AI-Powered Learning</div>
+      <h1 style="margin-bottom:20px;line-height:1.15">
+        Turn Learning Into an<br>
+        <span class="gradient-text">Interactive Game</span><br>
+        Experience
+      </h1>
+      <p style="color:var(--text-secondary);font-size:1.1rem;line-height:1.7;margin-bottom:36px;max-width:480px">
+        Master academic concepts through gamified quizzes, drag-and-drop puzzles, and real-time leaderboard competition.
+        Learning has never been this fun.
+      </p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg animate-glow">
+          🚀 Start Learning Free
+        </a>
+        <a href="#features" class="btn btn-secondary btn-lg">
+          Explore Games →
+        </a>
+      </div>
+      <!-- Social proof -->
+      <div style="display:flex;align-items:center;gap:16px;margin-top:40px">
+        <div style="display:flex">
+          {% for i in range(5) %}
+          <div
+            style="width:32px;height:32px;border-radius:50%;background:var(--grad-primary);border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-right:-10px">
+            {{ ['A','B','C','D','E'][i] }}</div>
+          {% endfor %}
+        </div>
+        <span style="color:var(--text-secondary);font-size:0.88rem">Join <strong
+            style="color:var(--text-primary)">2,400+</strong> students learning smarter</span>
+      </div>
+    </div>
+
+    <!-- Hero Visual: Floating Dashboard Card -->
+    <div class="hero-visual" style="animation:floatY 5s ease-in-out infinite">
+      <div class="hero-card-demo">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div
+            style="width:40px;height:40px;background:var(--grad-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+            ⚡</div>
+          <div>
+            <div style="font-weight:700">Alex's Dashboard</div>
+            <div style="color:var(--text-muted);font-size:0.8rem">Level 5 Scholar</div>
+          </div>
+          <div
+            style="margin-left:auto;background:rgba(16,185,129,0.2);color:#6ee7b7;padding:4px 12px;border-radius:999px;font-size:0.78rem;font-weight:600">
+            🔥 7 day streak</div>
+        </div>
+        <!-- Points bar -->
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.85rem">
+            <span style="color:var(--text-secondary)">XP Progress</span>
+            <span style="color:var(--purple-light);font-weight:700">1,250 / 2,000</span>
+          </div>
+          <div class="progress-line">
+            <div class="progress-line-fill" style="width:62%"></div>
+          </div>
+        </div>
+        <!-- Mini stats -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+          {% for item in [('🏆','#3','Rank'),('🎯','87%','Accuracy'),('🎮','24','Games')] %}
+          <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:1rem">{{ item[0] }}</div>
+            <div style="font-weight:700;font-size:0.95rem;margin:2px 0">{{ item[1] }}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">{{ item[2] }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        <!-- Badges -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          {% for b in [('🎯','First Steps'),('⚡','Quick Learner'),('🔥','Streak')] %}
+          <span
+            style="font-size:0.72rem;background:rgba(124,58,237,0.2);border:1px solid var(--border-glow);padding:3px 10px;border-radius:999px;color:var(--purple-light)">{{
+            b[0] }} {{ b[1] }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Decorative floating chips -->
+      <div
+        style="position:absolute;top:-20px;right:-30px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:12px;padding:10px 14px;font-size:0.85rem;font-weight:600;color:var(--amber);animation:floatY 3s ease-in-out infinite 0.5s">
+        +150 pts 🏆</div>
+      <div
+        style="position:absolute;bottom:-20px;left:-20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:10px 14px;font-size:0.85rem;font-weight:600;color:var(--green);animation:floatY 3.5s ease-in-out infinite 1s">
+        New Badge! 🏅</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    PROBLEM SECTION
+════════════════════════════════════════════════════════════ -->
+<section
+  style="padding:80px 0;background:linear-gradient(180deg,transparent,rgba(124,58,237,0.05),transparent);position:relative;z-index:1"
+  id="problem">
+  <div class="container" style="text-align:center">
+    <span class="section-tag reveal">❓ The Problem</span>
+    <h2 class="reveal" style="margin:12px 0 20px">Is Traditional Learning <span class="gradient-text">Boring?</span>
+    </h2>
+    <p class="reveal" style="color:var(--text-secondary);max-width:600px;margin:0 auto 50px;font-size:1.05rem">Students
+      are checked out. Passive reading and rote memorization aren't working. There's a better way.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px" class="stagger-children">
+      {% for item in [
+      ('😴','Low Engagement',"Traditional lectures can't compete with today's digital world"),
+      ('📉','Poor Retention','Students forget 70% of learned material within 24 hours'),
+      ('🎮','Missed Potential','Game-based learning improves retention by up to 90%')
+      ] %}
+      <div class="glass-card" style="padding:32px 28px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:16px">{{ item[0] }}</div>
+        <h3 style="margin-bottom:10px">{{ item[1] }}</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem">{{ item[2] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    FEATURES SECTION
+════════════════════════════════════════════════════════════ -->
+<section style="padding:var(--section-pad);position:relative;z-index:1" id="features">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag reveal">✨ Platform Features</span>
+      <h2 class="reveal">Everything You Need to <span class="gradient-text">Level Up</span></h2>
+      <p class="reveal">Built for students who want to learn faster, retain more, and actually enjoy the process.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px"
+      class="stagger-children">
+      {% for feat in [
+      ('🎯','Gamified Quizzes','Timed multiple-choice quizzes with instant feedback, scoring, and explanations for every
+      answer.','var(--blue)'),
+      ('🧩','Puzzle Challenges','Drag-and-drop and concept-match puzzles that make learning visual and
+      tactile.','var(--purple)'),
+      ('⚡','Interactive Learning','Real-time feedback keeps you engaged and helps identify knowledge gaps
+      instantly.','var(--cyan)'),
+      ('📊','Progress Tracking','Comprehensive dashboards show your improvement across subjects over
+      time.','var(--green)'),
+      ('🏆','Leaderboard','Compete with classmates in real-time rankings and climb the global
+      leaderboard.','var(--amber)'),
+      ('🏅','Badges & Rewards','Earn achievement badges as you hit milestones, keeping you motivated to keep
+      going.','var(--pink)')
+      ] %}
+      <div class="glass-card" style="padding:32px 28px">
+        <div
+          style="width:52px;height:52px;background:{{ feat[3] }}22;border:1px solid {{ feat[3] }}44;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px">
+          {{ feat[0] }}</div>
+        <h3 style="margin-bottom:10px">{{ feat[1] }}</h3>
+        <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.6">{{ feat[2] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    HOW IT WORKS
+════════════════════════════════════════════════════════════ -->
+<section
+  style="padding:var(--section-pad);background:linear-gradient(180deg,transparent,rgba(59,130,246,0.04),transparent);position:relative;z-index:1"
+  id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag reveal">🗺️ How It Works</span>
+      <h2 class="reveal">Your Path to <span class="gradient-text">Mastery</span></h2>
+    </div>
+    <!-- Steps -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative" class="stagger-children">
+      <!-- Connecting gradient line -->
+      <div
+        style="position:absolute;top:36px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--purple),var(--blue));z-index:0;opacity:0.4">
+      </div>
+      {% for step in [
+      ('1','📚','Choose Subject','Pick from 6+ subjects'),
+      ('2','🎮','Play Game','Quizzes & puzzles'),
+      ('3','⚡','Earn Points','Points per answer'),
+      ('4','🆙','Level Up','Harder challenges'),
+      ('5','📊','Track Progress','Monitor growth')
+      ] %}
+      <div style="text-align:center;padding:20px 8px;position:relative;z-index:1">
+        <div
+          style="width:72px;height:72px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 16px;box-shadow:var(--shadow-glow-p)">
+          {{ step[1] }}</div>
+        <div
+          style="font-size:0.7rem;color:var(--purple-light);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">
+          Step {{ step[0] }}</div>
+        <h4 style="font-size:0.95rem;margin-bottom:6px">{{ step[2] }}</h4>
+        <p style="color:var(--text-muted);font-size:0.8rem">{{ step[3] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════
+    BENEFITS
+════════════════════════════════════════════════════════════ -->
+<section style="padding:var(--section-pad);position:relative;z-index:1">
+  <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
+    <div class="reveal">
+      <span class="section-tag">💡 Benefits</span>
+      <h2 style="margin:12px 0 24px">Why Students <span class="gradient-text">Love LearnQuest</span></h2>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        {% for b in [
+        ('⚡','Learn Faster','Game mechanics trigger dopamine, making your brain absorb information faster.'),
+        ('🧠','Boost Retention','Active recall through quizzes improves memory retention by 90%.'),
+        ('🏆','Compete & Improve','Healthy leaderboard competition motivates daily practice.'),
+        ('📱','Learn Anywhere','Fully responsive — quiz yourself on any device, anytime.')
+        ] %}
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <div
+            style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,0.15);border:1px solid var(--border-glow);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
+            {{ b[0] }}</div>
+          <div>
+            <h4 style="margin-bottom:4px">{{ b[1] }}</h4>
+            <p style="color:var(--text-secondary);font-size:0.9rem">{{ b[2] }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <!-- Stats block -->
+    <div class="reveal reveal-delay-1">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        {% for stat in [('90%','Retention Rate','vs 20% with passive learning'),('3x','Faster Learning','Game-based vs
+        traditional'),('2,400+','Active Students','And growing daily'),('50+','Game Levels','Across 6 subjects')] %}
+        <div class="glass-card" style="padding:28px 24px;text-align:center">
+          <div
+            style="font-size:2.2rem;font-weight:900;font-family:var(--font-code);background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+            {{ stat[0] }}</div>
+          <div style="font-weight:700;margin:4px 0">{{ stat[1] }}</div>
+          <div style="color:var(--text-muted);font-size:0.8rem">{{ stat[2] }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    TECH STACK
+════════════════════════════════════════════════════════════ -->
+<section style="padding:80px 0;position:relative;z-index:1;border-top:1px solid var(--border)">
+  <div class="container" style="text-align:center">
+    <p
+      style="color:var(--text-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:32px">
+      Built With Industry-Grade Technology</p>
+    <div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap">
+      {% for tech in [('🐍','Python'),('🌶️','Flask'),('🐬','MySQL'),('📜','JavaScript'),('🎨','HTML/CSS')] %}
+      <div style="text-align:center;opacity:0.7;transition:opacity 0.2s" onmouseover="this.style.opacity=1"
+        onmouseout="this.style.opacity=0.7">
+        <div style="font-size:2.5rem;margin-bottom:8px">{{ tech[0] }}</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text-secondary)">{{ tech[1] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    TEAM SECTION
+════════════════════════════════════════════════════════════ -->
+<section style="padding:var(--section-pad);position:relative;z-index:1" id="team">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag reveal">👥 The Team</span>
+      <h2 class="reveal">Meet the <span class="gradient-text">Builders</span></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px"
+      class="stagger-children">
+      {% for member in [
+      ('👨‍💻',' Anushka Mestry','Full-Stack Developer','Architected the platform with Flask & MySQL'),
+      ('🎨',' Daksh Padaye','UI/UX Designer','Crafted the dark futuristic design system'),
+      ('🧠','Daksh Padaye','ML Engineer','Designed the AI-powered question generation'),
+      ('📊',' Anushka Mestry','Data Analyst','Built the gamification & analytics engine')
+      ] %}
+      <div class="glass-card" style="padding:32px 24px;text-align:center">
+        <div
+          style="width:70px;height:70px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 16px;box-shadow:var(--shadow-glow-p)">
+          {{ member[0] }}</div>
+        <h3 style="font-size:1.1rem;margin-bottom:4px">{{ member[1] }}</h3>
+        <div style="color:var(--purple-light);font-size:0.85rem;font-weight:600;margin-bottom:10px">{{ member[2] }}
+        </div>
+        <p style="color:var(--text-muted);font-size:0.83rem">{{ member[3] }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    FAQ SECTION
+════════════════════════════════════════════════════════════ -->
+<section style="padding:var(--section-pad);position:relative;z-index:1" id="faq">
+  <div class="container" style="max-width:800px;margin:0 auto">
+    <div class="section-header">
+      <span class="section-tag reveal">❓ FAQ</span>
+      <h2 class="reveal">Common <span class="gradient-text">Questions</span></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px" class="stagger-children">
+      {% for qa in [
+      ('Is LearnQuest AI free?','Yes! Creating an account and playing games is completely free. Earn points and level up
+      at no cost.'),
+      ('What subjects are available?','We currently offer Mathematics, Science, History, Computer Science, English, and
+      Geography, with more being added regularly.'),
+      ('How does the points system work?','You earn points for correct quiz answers with time bonuses for speed. Puzzle
+      completions also award points based on accuracy.'),
+      ('Can teachers use LearnQuest AI?','Yes! Teachers can log in as admins to add custom quizzes, manage students, and
+      view analytics.'),
+      ('Is there a mobile app?','LearnQuest AI is fully mobile responsive. You can access all features from any browser
+      on any device.')
+      ] %}
+      <div class="glass-card" style="padding:0;overflow:hidden">
+        <details style="cursor:pointer">
+          <summary
+            style="padding:20px 24px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center">
+            {{ qa[0] }}
+            <span style="color:var(--purple-light);font-size:1.2rem;transition:transform 0.3s">+</span>
+          </summary>
+          <div style="padding:0 24px 20px;color:var(--text-secondary);font-size:0.92rem;line-height:1.7">{{ qa[1] }}
+          </div>
+        </details>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    CONTACT FORM
+════════════════════════════════════════════════════════════ -->
+<section style="padding:var(--section-pad);position:relative;z-index:1" id="contact">
+  <div class="container" style="max-width:640px;margin:0 auto">
+    <div class="section-header">
+      <span class="section-tag reveal">✉️ Contact</span>
+      <h2 class="reveal">Get In <span class="gradient-text">Touch</span></h2>
+    </div>
+    <div class="glass-card reveal" style="padding:44px 40px">
+      <form id="contactForm" onsubmit="submitContact(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group"><label class="form-label">Name</label><input class="form-input" name="name" required
+              placeholder="Your Name"></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" name="email"
+              type="email" required placeholder="you@example.com"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Subject</label><input class="form-input" name="subject"
+            required placeholder="How can we help?"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" name="message"
+            rows="5" required placeholder="Tell us more..."></textarea></div>
+        <div id="contactMsg" style="margin-bottom:12px"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:15px">Send Message 📨</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+    CTA SECTION
+════════════════════════════════════════════════════════════ -->
+<section style="padding:100px 0;position:relative;z-index:1;overflow:hidden">
+  <div class="hero-orb"
+    style="width:700px;height:700px;background:radial-gradient(circle,rgba(124,58,237,0.2),transparent 70%);top:-200px;left:50%;transform:translateX(-50%)">
+  </div>
+  <div class="container" style="text-align:center;position:relative;z-index:1">
+    <span class="section-tag reveal">🚀 Get Started</span>
+    <h2 class="reveal" style="margin:16px 0 20px;font-size:clamp(2rem,4vw,3.2rem)">Ready to <span
+        class="gradient-text">Level Up</span> Your Learning?</h2>
+    <p class="reveal" style="color:var(--text-secondary);font-size:1.1rem;max-width:500px;margin:0 auto 40px">Join
+      thousands of students who turned boring study sessions into epic game sessions. Free forever.</p>
+    <div class="reveal" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg animate-glow">🎮 Start Playing Free</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already have an account?</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  function submitContact(e) {
+    e.preventDefault();
+    const msg = document.getElementById('contactMsg');
+    msg.innerHTML = '<span style="color:var(--green)">✅ Message sent! We\'ll get back to you within 24 hours.</span>';
+    e.target.reset();
+  }
+</script>
+{% endblock %}

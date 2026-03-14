@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Games{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+  <div class="dashboard-header animate-fadeInUp">
+    <span class="section-tag">🎮 Game Center</span>
+    <h1>Choose Your <span class="gradient-text">Challenge</span></h1>
+    <p style="color:var(--text-secondary)">Select a subject and game type to start earning points</p>
+  </div>
+
+  <!-- Filters -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px" class="animate-fadeInUp">
+    <button class="btn btn-primary btn-sm" onclick="filterGames('all')" id="filter-all">All Games</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterGames('quiz')" id="filter-quiz">❓ Quizzes</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterGames('puzzle')" id="filter-puzzle">🧩 Puzzles</button>
+    {% for s in subjects %}
+    <button class="btn btn-ghost btn-sm" onclick="filterSubject({{ s.id }})" id="subj-{{ s.id }}">{{ s.icon }} {{ s.name }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- Quizzes -->
+  <div id="quizzesSection">
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px">❓ Quiz Challenges</h2>
+    {% if quizzes %}
+    <div class="games-grid stagger-children">
+      {% for quiz in quizzes %}
+      <div class="game-card" data-type="quiz" data-subject="{{ quiz.subject_id }}"
+           onclick="window.location.href='{{ url_for('game.quiz', quiz_id=quiz.id) }}'">
+        <div class="game-card-header">
+          <div class="game-card-icon">{{ quiz.subject_icon or '❓' }}</div>
+          <div class="game-card-title">{{ quiz.title }}</div>
+          <div class="game-card-desc">{{ quiz.subject_name }} · {{ quiz.question_count }} questions · {{ quiz.time_limit // 60 }} min</div>
+        </div>
+        <div class="game-card-footer">
+          <span class="difficulty-badge diff-{{ quiz.difficulty }}">{{ quiz.difficulty | capitalize }}</span>
+          <span style="color:var(--purple-light);font-weight:700">+{{ quiz.question_count * quiz.points_per_question }} pts max</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-muted);padding:40px 0">No quizzes available yet. Check back soon!</p>
+    {% endif %}
+  </div>
+
+  <!-- Puzzles -->
+  <div id="puzzlesSection" style="margin-top:48px">
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px">🧩 Puzzle Challenges</h2>
+    {% if puzzles %}
+    <div class="games-grid stagger-children">
+      {% for puzzle in puzzles %}
+      <div class="game-card" data-type="puzzle" data-subject="{{ puzzle.subject_id }}"
+           onclick="window.location.href='{{ url_for('game.puzzle', puzzle_id=puzzle.id) }}'">
+        <div class="game-card-header">
+          <div class="game-card-icon">{{ puzzle.subject_icon or '🧩' }}</div>
+          <div class="game-card-title">{{ puzzle.title }}</div>
+          <div class="game-card-desc">{{ puzzle.description or '' | truncate(70) }}</div>
+        </div>
+        <div class="game-card-footer">
+          <span style="font-size:0.8rem;color:var(--cyan);font-weight:600">{{ puzzle.puzzle_type | replace('_',' ') | capitalize }}</span>
+          <span style="color:var(--purple-light);font-weight:700">+{{ puzzle.points }} pts</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-muted);padding:40px 0">No puzzles available yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+let activeType = 'all', activeSubject = null;
+
+function filterGames(type) {
+  activeType = type; activeSubject = null;
+  applyFilters();
+  document.querySelectorAll('[id^=filter-]').forEach(b => b.className = 'btn btn-ghost btn-sm');
+  document.getElementById('filter-' + type).className = 'btn btn-primary btn-sm';
+}
+
+function filterSubject(subjectId) {
+  activeSubject = subjectId; activeType = 'all';
+  applyFilters();
+  document.querySelectorAll('[id^=filter-],[id^=subj-]').forEach(b => b.className = 'btn btn-ghost btn-sm');
+  document.getElementById('subj-' + subjectId).className = 'btn btn-primary btn-sm';
+}
+
+function applyFilters() {
+  const cards = document.querySelectorAll('.game-card');
+  cards.forEach(card => {
+    const typeOk    = activeType === 'all' || card.dataset.type === activeType;
+    const subjectOk = !activeSubject || parseInt(card.dataset.subject) === activeSubject;
+    card.style.display = typeOk && subjectOk ? '' : 'none';
+  });
+  // Show/hide section headers
+  const qSection = document.getElementById('quizzesSection');
+  const pSection = document.getElementById('puzzlesSection');
+  if (activeType === 'puzzle') { qSection.style.display='none'; pSection.style.display=''; }
+  else if (activeType === 'quiz') { qSection.style.display=''; pSection.style.display='none'; }
+  else { qSection.style.display=''; pSection.style.display=''; }
+}
+</script>
+{% endblock %}
