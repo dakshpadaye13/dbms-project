@@ -1,195 +1,61 @@
 {% extends "base.html" %}
-{% block title %}Admin Panel{% endblock %}
+{% block title %}Admin - Database Viewer{% endblock %}
 
 {% block content %}
 <div class="admin-wrap">
   <div style="margin-bottom:32px">
     <span class="section-tag">🛡 Admin</span>
-    <h1>Admin <span class="gradient-text">Panel</span></h1>
-  </div>
-
-  <!-- Summary Stats -->
-  <div class="dashboard-grid stagger-children" style="margin-bottom:32px">
-    <div class="stat-card"><div class="stat-icon">👨‍🎓</div><div class="stat-value">{{ students | length }}</div><div class="stat-label">Students</div></div>
-    <div class="stat-card"><div class="stat-icon">❓</div><div class="stat-value">{{ quizzes | length }}</div><div class="stat-label">Quizzes</div></div>
-    <div class="stat-card"><div class="stat-icon">🧩</div><div class="stat-value">{{ puzzles | length }}</div><div class="stat-label">Puzzles</div></div>
-    <div class="stat-card"><div class="stat-icon">🎮</div><div class="stat-value">{{ total_attempts }}</div><div class="stat-label">Game Attempts</div></div>
+    <h1>Database <span class="gradient-text">Viewer</span></h1>
+    <p style="color:var(--text-secondary)">Viewing tables for `dbmsminipppp`</p>
   </div>
 
   <div class="admin-grid">
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <h4 style="color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Navigation</h4>
+    <aside class="admin-sidebar" style="position: sticky; top: 20px; align-self: start;">
+      <h4 style="color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Tables</h4>
       <nav class="admin-nav">
-        <a href="#" onclick="showTab('students')"  class="active"  id="nav-students">👨‍🎓 Students</a>
-        <a href="#" onclick="showTab('quizzes')"                   id="nav-quizzes">❓ Quizzes</a>
-        <a href="#" onclick="showTab('addQuiz')"                   id="nav-addQuiz">➕ Add Quiz</a>
-        <a href="#" onclick="showTab('addQ')"                      id="nav-addQ">✏️ Add Question</a>
-        <a href="#" onclick="showTab('subjects')"                  id="nav-subjects">📚 Subjects</a>
+        {% for table_name, rows in tables_data.items() %}
+        <a href="#" onclick="showTab('{{ table_name }}')" id="nav-{{ table_name }}" class="{% if loop.first %}active{% endif %}">
+          🗃️ {{ table_name }} ({{ rows|length }})
+        </a>
+        {% endfor %}
       </nav>
     </aside>
 
     <!-- Content Panels -->
     <div class="admin-content">
-
-      <!-- Students Tab -->
-      <div class="admin-tab active content-section" id="tab-students">
-        <h3>👨‍🎓 Student Management</h3>
+      {% for table_name, rows in tables_data.items() %}
+      <div class="admin-tab content-section {% if loop.first %}active{% endif %}" id="tab-{{ table_name }}">
+        <h3>🗃️ Table: {{ table_name }}</h3>
+        
         <div style="overflow-x:auto">
+          {% if rows %}
           <table class="data-table">
-            <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Points</th><th>Level</th><th>Joined</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                {% for column_name in rows[0].keys() %}
+                <th>{{ column_name }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
             <tbody>
-            {% for s in students %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td><strong style="color:var(--text-primary)">{{ s.username }}</strong></td>
-              <td>{{ s.email }}</td>
-              <td style="color:var(--purple-light);font-weight:700">⚡ {{ s.total_points }}</td>
-              <td>Lv {{ s.current_level }}</td>
-              <td>{{ s.created_at.strftime('%b %d, %Y') if s.created_at else '—' }}</td>
-              <td>
-                <button class="btn btn-danger btn-sm" onclick="deactivateStudent({{ s.id }}, this)">Deactivate</button>
-              </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px">No students registered yet.</td></tr>
-            {% endfor %}
+              {% for row in rows %}
+              <tr>
+                {% for value in row.values() %}
+                <td>{{ value }}</td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
+          {% else %}
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">
+            <p>Table is empty.</p>
+          </div>
+          {% endif %}
         </div>
       </div>
-
-      <!-- Quizzes Tab -->
-      <div class="admin-tab content-section" id="tab-quizzes">
-        <h3>❓ Quiz Management</h3>
-        <div style="overflow-x:auto">
-          <table class="data-table">
-            <thead><tr><th>#</th><th>Title</th><th>Subject</th><th>Difficulty</th><th>Questions</th><th>Action</th></tr></thead>
-            <tbody>
-            {% for q in quizzes %}
-            <tr>
-              <td>{{ q.id }}</td>
-              <td><strong style="color:var(--text-primary)">{{ q.title }}</strong></td>
-              <td>{{ q.subject_name }}</td>
-              <td><span class="difficulty-badge diff-{{ q.difficulty }}">{{ q.difficulty }}</span></td>
-              <td>{{ q.question_count }}</td>
-              <td>
-                <button class="btn btn-danger btn-sm" onclick="deleteQuiz({{ q.id }}, this)">Delete</button>
-              </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:40px">No quizzes yet.</td></tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Add Quiz Tab -->
-      <div class="admin-tab content-section" id="tab-addQuiz">
-        <h3>➕ Create New Quiz</h3>
-        <form id="addQuizForm" onsubmit="submitAddQuiz(event)" style="max-width:560px">
-          <div class="form-group">
-            <label class="form-label">Title</label>
-            <input class="form-input" name="title" required placeholder="e.g. Algebra Basics">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Subject</label>
-            <select class="form-input" name="subject_id" required>
-              {% for s in subjects %}<option value="{{ s.id }}">{{ s.icon }} {{ s.name }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="form-input" name="description" rows="2"></textarea>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-            <div class="form-group">
-              <label class="form-label">Difficulty</label>
-              <select class="form-input" name="difficulty">
-                <option>easy</option><option selected>medium</option><option>hard</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Time Limit (s)</label>
-              <input class="form-input" name="time_limit" type="number" value="300">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Pts/Question</label>
-              <input class="form-input" name="points_per_question" type="number" value="10">
-            </div>
-          </div>
-          <div id="addQuizMsg" style="margin-bottom:12px"></div>
-          <button type="submit" class="btn btn-primary">Create Quiz ✓</button>
-        </form>
-      </div>
-
-      <!-- Add Question Tab -->
-      <div class="admin-tab content-section" id="tab-addQ">
-        <h3>✏️ Add Quiz Question</h3>
-        <form id="addQForm" onsubmit="submitAddQuestion(event)" style="max-width:560px">
-          <div class="form-group">
-            <label class="form-label">Quiz</label>
-            <select class="form-input" name="quiz_id" required>
-              {% for q in quizzes %}<option value="{{ q.id }}">{{ q.title }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Question</label>
-            <textarea class="form-input" name="question" rows="2" required></textarea>
-          </div>
-          {% for opt in ['A','B','C','D'] %}
-          <div class="form-group">
-            <label class="form-label">Option {{ opt }}</label>
-            <input class="form-input" name="option_{{ opt | lower }}" required>
-          </div>
-          {% endfor %}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="form-group">
-              <label class="form-label">Correct Answer</label>
-              <select class="form-input" name="correct_answer">
-                <option>A</option><option>B</option><option>C</option><option>D</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Difficulty</label>
-              <select class="form-input" name="difficulty">
-                <option>easy</option><option selected>medium</option><option>hard</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Explanation (optional)</label>
-            <input class="form-input" name="explanation">
-          </div>
-          <div id="addQMsg" style="margin-bottom:12px"></div>
-          <button type="submit" class="btn btn-primary">Add Question ✓</button>
-        </form>
-      </div>
-
-      <!-- Subjects Tab -->
-      <div class="admin-tab content-section" id="tab-subjects">
-        <h3>📚 Subjects</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px">
-          {% for s in subjects %}
-          <div class="stat-card" style="text-align:center">
-            <div style="font-size:2rem">{{ s.icon }}</div>
-            <div style="font-weight:700;margin-top:6px">{{ s.name }}</div>
-          </div>
-          {% endfor %}
-        </div>
-        <form id="addSubjectForm" onsubmit="submitAddSubject(event)" style="max-width:420px">
-          <h4 style="margin-bottom:16px;font-size:0.95rem">Add New Subject</h4>
-          <div class="form-group"><label class="form-label">Name</label><input class="form-input" name="name" required></div>
-          <div class="form-group"><label class="form-label">Description</label><input class="form-input" name="description"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="form-group"><label class="form-label">Icon (emoji)</label><input class="form-input" name="icon" value="📚"></div>
-            <div class="form-group"><label class="form-label">Color</label><input class="form-input" name="color" type="color" value="#7c3aed"></div>
-          </div>
-          <button type="submit" class="btn btn-primary">Add Subject</button>
-        </form>
-      </div>
-
+      {% endfor %}
     </div><!-- .admin-content -->
   </div>
 </div>
@@ -198,49 +64,12 @@
 function showTab(tab) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
-  document.getElementById('tab-'+ tab).classList.add('active');
-  document.getElementById('nav-'+ tab).classList.add('active');
-}
-
-async function deactivateStudent(id, btn) {
-  if (!confirm('Deactivate this student?')) return;
-  await fetch(`/admin/student/${id}/deactivate`, { method: 'POST' });
-  btn.closest('tr').remove();
-}
-
-async function deleteQuiz(id, btn) {
-  if (!confirm('Delete this quiz?')) return;
-  await fetch(`/admin/quiz/${id}/delete`, { method: 'POST' });
-  btn.closest('tr').remove();
-}
-
-async function submitAddQuiz(e) {
-  e.preventDefault();
-  const form = e.target, data = Object.fromEntries(new FormData(form));
-  const res  = await fetch('/admin/quiz/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
-  const json = await res.json();
-  const msg  = document.getElementById('addQuizMsg');
-  if (json.success) { msg.innerHTML = '<span style="color:var(--green)">✅ Quiz created! ID: ' + json.quiz_id + '</span>'; form.reset(); }
-  else msg.innerHTML = '<span style="color:#fca5a5">❌ Error creating quiz.</span>';
-}
-
-async function submitAddQuestion(e) {
-  e.preventDefault();
-  const form = e.target, data = Object.fromEntries(new FormData(form));
-  const res  = await fetch('/admin/quiz/question/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
-  const json = await res.json();
-  const msg  = document.getElementById('addQMsg');
-  if (json.success) { msg.innerHTML = '<span style="color:var(--green)">✅ Question added!</span>'; form.reset(); }
-  else msg.innerHTML = '<span style="color:#fca5a5">❌ Error.</span>';
-}
-
-async function submitAddSubject(e) {
-  e.preventDefault();
-  const form = e.target, data = Object.fromEntries(new FormData(form));
-  data.color = data.color;
-  const res  = await fetch('/admin/subject/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
-  const json = await res.json();
-  if (json.success) { alert('Subject added! Refresh to see.'); form.reset(); }
+  
+  const targetTab = document.getElementById('tab-' + tab);
+  const targetNav = document.getElementById('nav-' + tab);
+  
+  if (targetTab) targetTab.classList.add('active');
+  if (targetNav) targetNav.classList.add('active');
 }
 </script>
 {% endblock %}
