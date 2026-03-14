@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Game Model
+# EduQuest - Game Model
 # (Delegates to quiz.py and gamification_engine.py)
 # ============================================================
 # This module provides a unified interface for game-related queries.

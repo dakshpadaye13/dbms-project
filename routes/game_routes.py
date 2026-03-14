@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Game Routes (Quiz, Puzzle, Concept Match)
+# EduQuest - Game Routes (Quiz, Puzzle, Concept Match)
 # ============================================================
 from flask import (Blueprint, render_template, request,
                    session, redirect, url_for, jsonify)

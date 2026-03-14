@@ -1,28 +1,25 @@
 # ============================================================
-# LearnQuest AI - Auth Routes (Login / Signup / Logout)
+# EduQuest - Auth Routes (Login / Signup / Logout)
+# Adapted for dbmsminipppp schema
 # ============================================================
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, session, flash, jsonify)
 
 auth_bp = Blueprint('auth', __name__)
 
-DB_AVAILABLE = True  # will be set to False if DB fails on import
+DB_AVAILABLE = True
 
 try:
     from models.user import User
-    from utils.gamification_engine import update_streak
 except Exception:
     DB_AVAILABLE = False
-
-import utils.dummy_data as dummy
 
 
 def _db_ok():
     """Quick DB reachability probe."""
     try:
         from utils.db_connection import test_connection
-        ok, _ = test_connection()
-        return ok
+        return test_connection()[0]
     except Exception:
         return False
 
@@ -30,61 +27,9 @@ def _db_ok():
 # ── Signup ────────────────────────────────────────────────────
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if 'user_id' in session:
-        return redirect(url_for('student.dashboard'))
-
-    if request.method == 'POST':
-        username  = request.form.get('username', '').strip()
-        email     = request.form.get('email', '').strip().lower()
-        password  = request.form.get('password', '')
-        full_name = request.form.get('full_name', '').strip()
-
-        if not _db_ok():
-            # Demo mode: auto-login as demo user
-            flash('⚠ Database offline — signed in as Demo user.', 'warning')
-            d = dummy.get_user_by_email('demo@learnquest.ai')
-            session['user_id']   = d['id']
-            session['username']  = d['username']
-            session['role']      = d['role']
-            session['full_name'] = d['full_name']
-            session['points']    = d['total_points']
-            session['level']     = d['current_level']
-            return redirect(url_for('student.dashboard'))
-
-        errors = []
-        if not username or len(username) < 3:
-            errors.append("Username must be at least 3 characters.")
-        if not email or '@' not in email:
-            errors.append("Please enter a valid email address.")
-        if not password or len(password) < 6:
-            errors.append("Password must be at least 6 characters.")
-        try:
-            if User.get_by_username(username):
-                errors.append("Username already taken.")
-            if User.get_by_email(email):
-                errors.append("Email already registered.")
-        except Exception:
-            pass
-
-        if errors:
-            return render_template('signup.html', errors=errors,
-                                   username=username, email=email,
-                                   full_name=full_name)
-
-        try:
-            user_id = User.create(username, email, password, full_name)
-            session['user_id']   = user_id
-            session['username']  = username
-            session['role']      = 'student'
-            session['full_name'] = full_name or username
-            session['points']    = 0
-            session['level']     = 1
-            return redirect(url_for('student.dashboard'))
-        except Exception as e:
-            flash('Registration failed. Please try again.', 'error')
-            return render_template('signup.html')
-
-    return render_template('signup.html')
+    # Signup doesn't make sense in this static DBMS schema right now,
+    # redirecting to login.
+    return redirect(url_for('auth.login'))
 
 
 # ── Login ─────────────────────────────────────────────────────
@@ -96,71 +41,49 @@ def login():
         return redirect(url_for('student.dashboard'))
 
     if request.method == 'POST':
-        email    = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        remember = request.form.get('remember', False)
+        login_key = request.form.get('email', '').strip() # Reuse the email field for student name/id or admin
+        
+        # Hardcoded Admin Login
+        if login_key.lower() == 'admin':
+            session['user_id']   = 0
+            session['username']  = 'Admin'
+            session['role']      = 'admin'
+            session['full_name'] = 'System Admin'
+            return redirect(url_for('admin.panel'))
 
-        # ── Dummy fallback when DB is unreachable ──────────────
         if not _db_ok():
-            user = dummy.get_user_by_email(email)
-            if user and dummy.verify_password(user, password):
-                session.permanent = bool(remember)
-                session['user_id']   = user['id']
-                session['username']  = user['username']
-                session['role']      = user['role']
-                session['full_name'] = user['full_name']
-                session['points']    = user['total_points']
-                session['level']     = user['current_level']
-                flash('⚠ Running in Demo mode — database offline.', 'warning')
-                if user['role'] == 'admin':
-                    return redirect(url_for('admin.panel'))
-                return redirect(url_for('student.dashboard'))
-            else:
-                # Hint for demo mode
-                return render_template('login.html',
-                                       error="Invalid credentials. Try demo@learnquest.ai / demo123",
-                                       email=email)
+            flash('⚠ Database offline — cannot resolve student.', 'warning')
+            return render_template('login.html', error="Database offline.", email=login_key)
 
-        # ── Normal DB login ────────────────────────────────────
         try:
-            user = User.get_by_email(email)
-            if user and User.verify_password(user, password):
-                session.permanent = bool(remember)
-                session['user_id']   = user['id']
-                session['username']  = user['username']
-                session['role']      = user['role']
-                session['full_name'] = user['full_name'] or user['username']
-                session['points']    = user.get('total_points', 0)
-                session['level']     = user.get('current_level', 1)
+            # Try to fetch by ID or Name
+            user = None
+            if login_key.isdigit():
+                user = User.get_student_by_id(int(login_key))
+            if not user:
+                user = User.get_student_by_name(login_key)
 
-                try:
-                    update_streak(user['id'])
-                    User.update_last_login(user['id'])
-                except Exception:
-                    pass
+            if user:
+                session.permanent = True
+                session['user_id']   = user['student_id']
+                session['username']  = user['name']
+                session['role']      = 'student'
+                session['full_name'] = user['name']
+                session['points']    = user.get('points', 0)
+                
+                # Assign arbitrary level based on ENUM mapping
+                lvl_map = {'Beginner': 1, 'Intermediate': 2, 'Advanced': 3}
+                session['level']     = lvl_map.get(user.get('level', 'Beginner'), 1)
 
-                if user['role'] == 'admin':
-                    return redirect(url_for('admin.panel'))
                 return redirect(url_for('student.dashboard'))
             else:
                 return render_template('login.html',
-                                       error="Invalid email or password.",
-                                       email=email)
-        except Exception:
-            # DB failed mid-request — fallback to dummy
-            user = dummy.get_user_by_email(email)
-            if user and dummy.verify_password(user, password):
-                session['user_id']   = user['id']
-                session['username']  = user['username']
-                session['role']      = user['role']
-                session['full_name'] = user['full_name']
-                session['points']    = user['total_points']
-                session['level']     = user['current_level']
-                flash('⚠ Running in Demo mode — database offline.', 'warning')
-                return redirect(url_for('student.dashboard'))
+                                       error="Student not found. Please enter a valid Student Name (e.g., Student1) or ID.",
+                                       email=login_key)
+        except Exception as e:
             return render_template('login.html',
-                                   error="Database offline. Use demo@learnquest.ai / demo123",
-                                   email=email)
+                                   error=f"Database error: {str(e)}",
+                                   email=login_key)
 
     return render_template('login.html')
 
@@ -175,9 +98,4 @@ def logout():
 # ── API: Check username uniqueness ────────────────────────────
 @auth_bp.route('/api/check-username')
 def check_username():
-    username = request.args.get('username', '').strip()
-    try:
-        taken = bool(User.get_by_username(username))
-    except Exception:
-        taken = any(u['username'] == username for u in dummy.DUMMY_USERS)
-    return jsonify({'available': not taken})
+    return jsonify({'available': False})

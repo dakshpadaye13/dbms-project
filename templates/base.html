@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}LearnQuest AI{% endblock %} | Gamified Learning Platform</title>
-  <meta name="description" content="{% block meta_desc %}LearnQuest AI - Turn learning into an interactive game experience with quizzes, puzzles, and challenges.{% endblock %}">
+  <title>{% block title %}EduQuest{% endblock %} | Gamified Learning Platform</title>
+  <meta name="description" content="{% block meta_desc %}EduQuest - Turn learning into an interactive game experience with quizzes, puzzles, and challenges.{% endblock %}">
   <!-- Google Fonts: Space Grotesk + Outfit + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
 <!-- ── NAVBAR ──────────────────────────────────────────────── -->
 <nav id="navbar">
   <div class="nav-inner">
-    <a href="{{ url_for('main.landing') }}" class="nav-logo">⚡ LearnQuest AI</a>
+    <a href="{{ url_for('main.landing') }}" class="nav-logo">⚡ EduQuest</a>
 
     {% if session.get('user_id') %}
     <!-- Logged-in navigation -->
@@ -108,7 +108,7 @@
 {% block show_footer %}
 <footer>
   <div class="container">
-    <div class="footer-logo">⚡ LearnQuest AI</div>
+    <div class="footer-logo">⚡ EduQuest</div>
     <p style="color:#475569;font-size:0.88rem;margin-bottom:20px">Turning learning into an epic adventure. Play. Learn. Level Up.</p>
     <div class="footer-links">
       <a href="#features">Features</a>
@@ -118,7 +118,7 @@
       <a href="{{ url_for('auth.signup') }}">Sign Up Free</a>
     </div>
     <div class="neon-line" style="margin:24px auto;max-width:300px"></div>
-    <p class="footer-copy">© 2024 LearnQuest AI · Built with ❤ and Python</p>
+    <p class="footer-copy">© 2024 EduQuest · Built with ❤ and Python</p>
   </div>
 </footer>
 {% endblock %}

@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Dummy Data Fallback
+# EduQuest - Dummy Data Fallback
 # Used when MySQL is not connected, for demo/development use
 # ============================================================
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,7 +10,7 @@ DUMMY_USERS = [
     {
         'id': 1,
         'username': 'demo',
-        'email': 'demo@learnquest.ai',
+        'email': 'demo@eduquest.ai',
         'password_hash': generate_password_hash('demo123'),
         'full_name': 'Demo Student',
         'role': 'student',
@@ -23,7 +23,7 @@ DUMMY_USERS = [
     {
         'id': 2,
         'username': 'admin',
-        'email': 'admin@learnquest.ai',
+        'email': 'admin@eduquest.ai',
         'password_hash': generate_password_hash('admin123'),
         'full_name': 'Admin User',
         'role': 'admin',

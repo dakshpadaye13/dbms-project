@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Progress Model
+# EduQuest - Progress Model
 # ============================================================
 from utils.db_connection import execute_query
 

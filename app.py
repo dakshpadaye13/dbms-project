@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Flask Application Entry Point
+# EduQuest - Flask Application Entry Point
 # ============================================================
 from flask import Flask, render_template, session, redirect, url_for
 from config import config
@@ -59,7 +59,7 @@ def create_app():
     def inject_globals():
         from utils.gamification_engine import get_level_name
         return {
-            'app_name': 'LearnQuest AI',
+            'app_name': 'EduQuest',
             'get_level_name': get_level_name
         }
 

@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - MySQL Database Connection Utility
+# EduQuest - MySQL Database Connection Utility
 # ============================================================
 import mysql.connector
 from mysql.connector import Error, pooling
@@ -17,7 +17,7 @@ def init_pool():
     global _pool
     try:
         _pool = pooling.MySQLConnectionPool(
-            pool_name="learnquest_pool",
+            pool_name="eduquest_pool",
             pool_size=5,
             host=config.MYSQL_HOST,
             port=config.MYSQL_PORT,

@@ -1,51 +1,12 @@
 # ============================================================
-# LearnQuest AI - Student Routes (Dashboard, Progress, etc.)
+# EduQuest - Student Routes (Adapted for dbmsminipppp)
 # ============================================================
-from flask import (Blueprint, render_template, request,
-                   redirect, url_for, session, jsonify)
+from flask import (Blueprint, render_template, redirect, url_for, session, jsonify)
 from functools import wraps
-import utils.dummy_data as dummy
+from utils.db_connection import execute_query
 
 student_bp = Blueprint('student', __name__)
 
-# ── Helpers ───────────────────────────────────────────────────
-def _db_ok():
-    try:
-        from utils.db_connection import test_connection
-        ok, _ = test_connection()
-        return ok
-    except Exception:
-        return False
-
-LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000]
-LEVEL_NAMES      = ['Novice','Apprentice','Learner','Scholar','Expert',
-                    'Master','Grandmaster','Legend','Elite','Champion']
-
-def _level_info(points):
-    level = 1
-    for i, t in enumerate(LEVEL_THRESHOLDS):
-        if points >= t:
-            level = i + 1
-    next_t = LEVEL_THRESHOLDS[min(level, len(LEVEL_THRESHOLDS)-1)] if level < len(LEVEL_THRESHOLDS) else None
-    prev_t = LEVEL_THRESHOLDS[level - 1]
-    
-    if next_t:
-        pct = int((points - prev_t) / max(next_t - prev_t, 1) * 100)
-        rem = next_t - points
-    else:
-        pct = 100
-        rem = 0
-        
-    return {
-        'current_level': level,
-        'next_threshold': next_t,
-        'current_threshold': prev_t,
-        'percent': pct,
-        'remaining': rem
-    }
-
-def _level_name(level):
-    return LEVEL_NAMES[min(level - 1, len(LEVEL_NAMES)-1)]
 
 def login_required(f):
     @wraps(f)
@@ -55,56 +16,35 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-
 # ── Dashboard ─────────────────────────────────────────────────
 @student_bp.route('/dashboard')
 @login_required
 def dashboard():
     user_id = session['user_id']
+    
+    # Fetch Student
+    user = execute_query("SELECT * FROM STUDENT WHERE student_id = %s", (user_id,), fetchone=True)
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
 
-    if not _db_ok():
-        user          = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-        badges        = dummy.DUMMY_BADGES
-        history       = dummy.DUMMY_HISTORY[:5]
-        stats         = dummy.DUMMY_STATS
-        subject_stats = dummy.DUMMY_SUBJECT_STATS
-        level_info    = _level_info(user['total_points'])
-        rank          = next((e['rank'] for e in dummy.DUMMY_LEADERBOARD
-                              if e['username'] == user['username']), 99)
-        level_name    = _level_name(user['current_level'])
-        quizzes       = dummy.DUMMY_QUIZZES[:6]
-    else:
-        try:
-            from models.user import User
-            from models.quiz import Quiz
-            from models.progress import Progress
-            from utils.gamification_engine import (
-                get_next_level_points, get_level_name, get_user_rank)
-            user          = User.get_by_id(user_id)
-            badges        = User.get_badges(user_id)
-            history       = Progress.get_user_history(user_id, limit=5)
-            stats         = Progress.get_stats(user_id)
-            subject_stats = Progress.get_subject_stats(user_id)
-            level_info    = get_next_level_points(user['total_points'])
-            rank          = get_user_rank(user_id)
-            level_name    = get_level_name(user['current_level'])
-            quizzes       = Quiz.get_all()[:6]
-        except Exception:
-            user          = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-            badges        = dummy.DUMMY_BADGES
-            history       = dummy.DUMMY_HISTORY[:5]
-            stats         = dummy.DUMMY_STATS
-            subject_stats = dummy.DUMMY_SUBJECT_STATS
-            level_info    = _level_info(user['total_points'])
-            rank          = 3
-            level_name    = _level_name(user['current_level'])
-            quizzes       = dummy.DUMMY_QUIZZES[:6]
+    # Fetch Enrolled Courses
+    courses = execute_query("""
+        SELECT c.course_id, c.title, c.subject, c.level, t.name as teacher_name
+        FROM COURSE c
+        JOIN ENROLL e ON c.course_id = e.course_id
+        JOIN TEACHER t ON c.teacher_id = t.teacher_id
+        WHERE e.student_id = %s
+    """, (user_id,), fetch=True)
 
-    return render_template('dashboard.html',
-                           user=user, badges=badges, history=history,
-                           stats=stats, subject_stats=subject_stats,
-                           level_info=level_info, rank=rank,
-                           level_name=level_name, quizzes=quizzes)
+    # Calculate rank based on LEADERBOARD or points
+    rank_data = execute_query("""
+        SELECT COUNT(*) + 1 as rank 
+        FROM STUDENT WHERE points > %s
+    """, (user.get('points', 0),), fetchone=True)
+    rank = rank_data['rank'] if rank_data else '--'
+
+    return render_template('dashboard.html', user=user, courses=courses, rank=rank)
 
 
 # ── Leaderboard ───────────────────────────────────────────────
@@ -112,50 +52,34 @@ def dashboard():
 @login_required
 def leaderboard():
     user_id = session['user_id']
+    # Use the LEADERBOARD table joined with STUDENT
+    board = execute_query("""
+        SELECT s.name as username, l.points, 
+               (@row_number:=@row_number + 1) AS rank
+        FROM LEADERBOARD l
+        JOIN STUDENT s ON s.student_id = l.student_id
+        JOIN (SELECT @row_number:=0) r
+        ORDER BY l.points DESC
+    """, fetch=True)
 
-    if not _db_ok():
-        board        = dummy.DUMMY_LEADERBOARD
-        current_user = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-        user_rank    = next((e['rank'] for e in board
-                             if e['username'] == current_user['username']), 99)
-    else:
-        try:
-            from models.user import User
-            from utils.gamification_engine import get_leaderboard, get_user_rank
-            board        = get_leaderboard(limit=50)
-            user_rank    = get_user_rank(user_id)
-            current_user = User.get_by_id(user_id)
-        except Exception:
-            board        = dummy.DUMMY_LEADERBOARD
-            current_user = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-            user_rank    = 3
+    # Simplified user rank logic
+    user_rank = '--'
+    for b in board:
+        if b['username'] == session.get('username'):
+            user_rank = b['rank']
+            break
 
-    return render_template('leaderboard.html',
-                           board=board, user_rank=user_rank,
-                           current_user=current_user)
+    user = {'username': session.get('username'), 'total_points': session.get('points', 0)}
+    return render_template('leaderboard.html', board=board, user_rank=user_rank, current_user=user)
 
 
-# ── Games List ────────────────────────────────────────────────
+# ── Games / Courses List ──────────────────────────────────────
 @student_bp.route('/games')
 @login_required
 def games():
-    if not _db_ok():
-        subjects = dummy.DUMMY_SUBJECTS
-        quizzes  = dummy.DUMMY_QUIZZES
-        puzzles  = dummy.DUMMY_PUZZLES
-    else:
-        try:
-            from models.quiz import Quiz, Puzzle, Subject
-            subjects = Subject.get_all()
-            quizzes  = Quiz.get_all()
-            puzzles  = Puzzle.get_all()
-        except Exception:
-            subjects = dummy.DUMMY_SUBJECTS
-            quizzes  = dummy.DUMMY_QUIZZES
-            puzzles  = dummy.DUMMY_PUZZLES
-
-    return render_template('games.html',
-                           subjects=subjects, quizzes=quizzes, puzzles=puzzles)
+    courses = execute_query("SELECT * FROM COURSE", fetch=True)
+    puzzles = execute_query("SELECT * FROM PUZZLE", fetch=True)
+    return render_template('games.html', courses=courses, puzzles=puzzles)
 
 
 # ── Profile ───────────────────────────────────────────────────
@@ -163,58 +87,28 @@ def games():
 @login_required
 def profile():
     user_id = session['user_id']
+    user = execute_query("SELECT * FROM STUDENT WHERE student_id = %s", (user_id,), fetchone=True)
+    
+    # User's quiz marks
+    history = execute_query("""
+        SELECT c.title, q.marks
+        FROM QUIZ q
+        JOIN COURSE c ON q.course_id = c.course_id
+        JOIN ENROLL e ON c.course_id = e.course_id
+        WHERE e.student_id = %s
+    """, (user_id,), fetch=True)
 
-    if not _db_ok():
-        user    = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-        badges  = dummy.DUMMY_BADGES
-        stats   = dummy.DUMMY_STATS
-        history = dummy.DUMMY_HISTORY
-        rank    = 3
-    else:
-        try:
-            from models.user import User
-            from models.progress import Progress
-            from utils.gamification_engine import get_user_rank
-            user    = User.get_by_id(user_id)
-            badges  = User.get_badges(user_id)
-            stats   = Progress.get_stats(user_id)
-            history = Progress.get_user_history(user_id, limit=10)
-            rank    = get_user_rank(user_id)
-        except Exception:
-            user    = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-            badges  = dummy.DUMMY_BADGES
-            stats   = dummy.DUMMY_STATS
-            history = dummy.DUMMY_HISTORY
-            rank    = 3
-
-    return render_template('profile.html',
-                           user=user, badges=badges, stats=stats,
-                           rank=rank, history=history)
+    return render_template('profile.html', user=user, history=history, rank='--')
 
 
-# ── API: User stats JSON ───────────────────────────────────────
 @student_bp.route('/api/my-stats')
 @login_required
 def my_stats():
-    user_id = session['user_id']
-    if not _db_ok():
-        user  = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-        stats = dummy.DUMMY_STATS
-    else:
-        try:
-            from models.user import User
-            from models.progress import Progress
-            from utils.gamification_engine import get_level_name
-            user  = User.get_by_id(user_id)
-            stats = Progress.get_stats(user_id)
-        except Exception:
-            user  = dummy.get_user_by_id(user_id) or dummy.DUMMY_USERS[0]
-            stats = dummy.DUMMY_STATS
-
+    # Simplistic API just for UI functionality
     return jsonify({
-        'points':      user['total_points'],
-        'level':       user['current_level'],
-        'level_name':  _level_name(user['current_level']),
-        'streak':      user['streak_days'],
-        'total_games': stats.get('total_activities', 0),
+        'points': session.get('points', 0),
+        'level': session.get('level', 1),
+        'level_name': 'Student Level',
+        'streak': 0,
+        'total_games': 0
     })

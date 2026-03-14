@@ -1,12 +1,12 @@
 # ============================================================
-# LearnQuest AI - Application Configuration
+# EduQuest - Application Configuration
 # ============================================================
 import os
 
 
 class Config:
     """Base configuration"""
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'learnquest_super_secret_key_2024')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'eduquest_super_secret_key_2024')
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
 
@@ -15,7 +15,7 @@ class Config:
     MYSQL_PORT     = int(os.environ.get('MYSQL_PORT', 3306))
     MYSQL_USER     = os.environ.get('MYSQL_USER',     'root')
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')       # Change in production
-    MYSQL_DB       = os.environ.get('MYSQL_DB',       'learnquest_ai')
+    MYSQL_DB       = os.environ.get('MYSQL_DB',       'dbmsminipppp')
     MYSQL_CHARSET  = 'utf8mb4'
 
     # Gamification Settings

@@ -1,5 +1,5 @@
 /* ============================================================
-   LearnQuest AI - Main JavaScript Utilities
+   EduQuest - Main JavaScript Utilities
    Handles: navbar scroll, reveal animations, mobile menu
    ============================================================ */
 

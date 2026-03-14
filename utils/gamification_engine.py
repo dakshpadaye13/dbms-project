@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Gamification Engine
+# EduQuest - Gamification Engine
 # Handles: points, levels, badges, streaks, leaderboard
 # ============================================================
 from utils.db_connection import execute_query
