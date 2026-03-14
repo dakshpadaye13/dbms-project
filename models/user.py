@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - User Model (Adapted for dbmsminipppp)
+# EduQuest - User Model (Adapted for dbmsminipppp)
 # ============================================================
 from utils.db_connection import execute_query
 

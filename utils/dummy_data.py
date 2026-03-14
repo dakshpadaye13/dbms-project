@@ -1,36 +1,37 @@
 # ============================================================
-# LearnQuest AI - Dummy Data Fallback
+# EduQuest - Dummy Data Fallback
 # Used when MySQL is not connected, for demo/development use
 # ============================================================
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 
 # ── Dummy Users ───────────────────────────────────────────────
 DUMMY_USERS = [
     {
         'id': 1,
         'username': 'demo',
-        'email': 'demo@learnquest.ai',
+        'email': 'demo@eduquest.ai',
         'password_hash': generate_password_hash('demo123'),
         'full_name': 'Demo Student',
         'role': 'student',
         'total_points': 1250,
         'current_level': 5,
         'streak_days': 7,
-        'last_login': '2024-03-14',
-        'created_at': '2024-01-01',
+        'last_login': datetime.now() - timedelta(days=1),
+        'created_at': datetime(2024, 1, 1),
     },
     {
         'id': 2,
         'username': 'admin',
-        'email': 'admin@learnquest.ai',
+        'email': 'admin@eduquest.ai',
         'password_hash': generate_password_hash('admin123'),
         'full_name': 'Admin User',
         'role': 'admin',
         'total_points': 9999,
         'current_level': 10,
         'streak_days': 30,
-        'last_login': '2024-03-14',
-        'created_at': '2024-01-01',
+        'last_login': datetime.now(),
+        'created_at': datetime(2024, 1, 1),
     },
 ]
 
@@ -50,6 +51,7 @@ DUMMY_QUIZZES = [
         'id': 1, 'title': 'Algebra Basics', 'subject_id': 1,
         'subject_name': 'Mathematics', 'subject_icon': '📐',
         'difficulty': 'Easy', 'time_limit': 30, 'question_count': 10,
+        'points_per_question': 10,
         'description': 'Test your knowledge of basic algebra concepts.',
         'questions': [
             {
@@ -83,6 +85,7 @@ DUMMY_QUIZZES = [
         'id': 2, 'title': 'Python Fundamentals', 'subject_id': 3,
         'subject_name': 'Computer Science', 'subject_icon': '💻',
         'difficulty': 'Medium', 'time_limit': 45, 'question_count': 10,
+        'points_per_question': 10,
         'description': 'Core Python programming concepts and syntax.',
         'questions': [
             {
@@ -117,6 +120,7 @@ DUMMY_QUIZZES = [
         'id': 3, 'title': 'World History: Ancient', 'subject_id': 4,
         'subject_name': 'History', 'subject_icon': '📜',
         'difficulty': 'Hard', 'time_limit': 40, 'question_count': 10,
+        'points_per_question': 10,
         'description': 'Test your knowledge of ancient civilizations.',
         'questions': [
             {
@@ -140,6 +144,7 @@ DUMMY_QUIZZES = [
         'id': 4, 'title': 'Science: Physics Basics', 'subject_id': 2,
         'subject_name': 'Science', 'subject_icon': '🔬',
         'difficulty': 'Easy', 'time_limit': 30, 'question_count': 8,
+        'points_per_question': 10,
         'description': 'Fundamental physics concepts for beginners.',
         'questions': [
             {
@@ -159,6 +164,7 @@ DUMMY_QUIZZES = [
         'id': 5, 'title': 'English Grammar', 'subject_id': 5,
         'subject_name': 'English', 'subject_icon': '📚',
         'difficulty': 'Easy', 'time_limit': 25, 'question_count': 10,
+        'points_per_question': 10,
         'description': 'Test your English grammar and vocabulary skills.',
         'questions': [
             {
@@ -173,6 +179,7 @@ DUMMY_QUIZZES = [
         'id': 6, 'title': 'World Geography', 'subject_id': 6,
         'subject_name': 'Geography', 'subject_icon': '🌍',
         'difficulty': 'Medium', 'time_limit': 35, 'question_count': 10,
+        'points_per_question': 10,
         'description': 'Explore countries, capitals, and geographical features.',
         'questions': [
             {
@@ -190,6 +197,7 @@ DUMMY_PUZZLES = [
         'id': 1, 'title': 'Match the Planets', 'subject_id': 2,
         'subject_name': 'Science', 'subject_icon': '🔬',
         'puzzle_type': 'concept_match', 'difficulty': 'Easy',
+        'points': 50,
         'description': 'Match each planet to its correct description.',
         'puzzle_data': {
             'pairs': [
@@ -205,6 +213,7 @@ DUMMY_PUZZLES = [
         'id': 2, 'title': 'Python Keywords Sort', 'subject_id': 3,
         'subject_name': 'Computer Science', 'subject_icon': '💻',
         'puzzle_type': 'drag_drop', 'difficulty': 'Medium',
+        'points': 50,
         'description': 'Sort Python keywords into the correct categories.',
         'puzzle_data': {
             'categories': ['Loop Keywords', 'Condition Keywords', 'Function Keywords'],
@@ -224,6 +233,7 @@ DUMMY_PUZZLES = [
         'id': 3, 'title': 'Historical Events Timeline', 'subject_id': 4,
         'subject_name': 'History', 'subject_icon': '📜',
         'puzzle_type': 'concept_match', 'difficulty': 'Hard',
+        'points': 50,
         'description': 'Match historical events to their correct years.',
         'puzzle_data': {
             'pairs': [
@@ -239,49 +249,48 @@ DUMMY_PUZZLES = [
 
 # ── Dummy Progress / Activity ─────────────────────────────────
 DUMMY_HISTORY = [
-    {'game_type': 'quiz', 'game_title': 'Algebra Basics',       'score': 85,  'points_earned': 120, 'played_at': '2024-03-13 20:30'},
-    {'game_type': 'puzzle','game_title': 'Match the Planets',    'score': 100, 'points_earned': 50,  'played_at': '2024-03-13 19:00'},
-    {'game_type': 'quiz', 'game_title': 'Python Fundamentals',  'score': 72,  'points_earned': 90,  'played_at': '2024-03-12 18:15'},
-    {'game_type': 'quiz', 'game_title': 'English Grammar',      'score': 90,  'points_earned': 130, 'played_at': '2024-03-12 15:00'},
-    {'game_type': 'puzzle','game_title': 'Python Keywords Sort', 'score': 80,  'points_earned': 50,  'played_at': '2024-03-11 21:00'},
+    {'activity_type': 'quiz', 'activity_title': 'Algebra Basics', 'score': 85, 'max_score': 100, 'points_earned': 120, 'completed_at': datetime.now() - timedelta(hours=2), 'attempt_number': 1},
+    {'activity_type': 'puzzle', 'activity_title': 'Match the Planets', 'score': 100, 'max_score': 100, 'points_earned': 50, 'completed_at': datetime.now() - timedelta(hours=5), 'attempt_number': 1},
+    {'activity_type': 'quiz', 'activity_title': 'Python Fundamentals', 'score': 72, 'max_score': 100, 'points_earned': 90, 'completed_at': datetime.now() - timedelta(days=1), 'attempt_number': 1},
+    {'activity_type': 'quiz', 'activity_title': 'English Grammar', 'score': 90, 'max_score': 100, 'points_earned': 130, 'completed_at': datetime.now() - timedelta(days=2), 'attempt_number': 1},
+    {'activity_type': 'puzzle', 'activity_title': 'Python Keywords Sort', 'score': 80, 'max_score': 100, 'points_earned': 50, 'completed_at': datetime.now() - timedelta(days=3), 'attempt_number': 2},
 ]
 
 DUMMY_STATS = {
     'total_activities': 24,
-    'total_points':     1250,
-    'avg_score':        83.5,
-    'quizzes_played':   18,
-    'puzzles_played':   6,
-    'best_score':       100,
+    'completed': 22,
+    'total_score': 1250,
+    'avg_accuracy': 83.5,
+    'best_score': 100,
 }
 
 DUMMY_SUBJECT_STATS = [
-    {'subject_name': 'Mathematics',      'subject_icon': '📐', 'avg_score': 88, 'games_played': 8},
-    {'subject_name': 'Computer Science', 'subject_icon': '💻', 'avg_score': 76, 'games_played': 6},
-    {'subject_name': 'History',          'subject_icon': '📜', 'avg_score': 70, 'games_played': 4},
-    {'subject_name': 'Science',          'subject_icon': '🔬', 'avg_score': 82, 'games_played': 3},
-    {'subject_name': 'English',          'subject_icon': '📚', 'avg_score': 90, 'games_played': 3},
+    {'name': 'Mathematics',      'icon': '📐', 'color': '#3b82f6', 'points_earned': 450, 'games_played': 8},
+    {'name': 'Computer Science', 'icon': '💻', 'color': '#7c3aed', 'points_earned': 320, 'games_played': 6},
+    {'name': 'History',          'icon': '📜', 'color': '#f59e0b', 'points_earned': 150, 'games_played': 4},
+    {'name': 'Science',          'icon': '🔬', 'color': '#10b981', 'points_earned': 180, 'games_played': 3},
+    {'name': 'English',          'icon': '📚', 'color': '#ec4899', 'points_earned': 150, 'games_played': 3},
 ]
 
 DUMMY_BADGES = [
-    {'name': 'First Steps',   'icon': '🎯', 'description': 'Completed your first quiz'},
-    {'name': 'Quick Learner', 'icon': '⚡', 'description': 'Completed 5 games in one day'},
-    {'name': '7-Day Streak',  'icon': '🔥', 'description': 'Maintained a 7-day learning streak'},
-    {'name': 'Math Wizard',   'icon': '📐', 'description': 'Scored 100% on a Math quiz'},
-    {'name': 'Scholar',       'icon': '📚', 'description': 'Earned 1000+ total points'},
+    {'name': 'First Steps',   'icon': '🎯', 'color': '#3b82f6', 'description': 'Completed your first quiz', 'earned_at': datetime.now() - timedelta(days=5)},
+    {'name': 'Quick Learner', 'icon': '⚡', 'color': '#f59e0b', 'description': 'Completed 5 games in one day', 'earned_at': datetime.now() - timedelta(days=4)},
+    {'name': '7-Day Streak',  'icon': '🔥', 'color': '#ef4444', 'description': 'Maintained a 7-day learning streak', 'earned_at': datetime.now() - timedelta(days=1)},
+    {'name': 'Math Wizard',   'icon': '📐', 'color': '#3b82f6', 'description': 'Scored 100% on a Math quiz', 'earned_at': datetime.now() - timedelta(days=3)},
+    {'name': 'Scholar',       'icon': '📚', 'color': '#ec4899', 'description': 'Earned 1000+ total points', 'earned_at': datetime.now() - timedelta(days=2)},
 ]
 
 DUMMY_LEADERBOARD = [
-    {'rank': 1,  'username': 'TopLearner',  'full_name': 'Riya Sharma',    'total_points': 4200, 'current_level': 9,  'streak_days': 21},
-    {'rank': 2,  'username': 'AceStudent',  'full_name': 'Arjun Mehta',    'total_points': 3800, 'current_level': 8,  'streak_days': 14},
-    {'rank': 3,  'username': 'demo',        'full_name': 'Demo Student',    'total_points': 1250, 'current_level': 5,  'streak_days': 7},
-    {'rank': 4,  'username': 'BrainBox',    'full_name': 'Nisha Kapoor',   'total_points': 1100, 'current_level': 4,  'streak_days': 5},
-    {'rank': 5,  'username': 'QuizKing',    'full_name': 'Dev Patel',      'total_points': 980,  'current_level': 4,  'streak_days': 3},
-    {'rank': 6,  'username': 'StudyPro',    'full_name': 'Meera Nair',     'total_points': 850,  'current_level': 3,  'streak_days': 2},
-    {'rank': 7,  'username': 'FastLearner', 'full_name': 'Aditya Roy',     'total_points': 720,  'current_level': 3,  'streak_days': 1},
-    {'rank': 8,  'username': 'Genius99',    'full_name': 'Priya Singh',    'total_points': 600,  'current_level': 2,  'streak_days': 0},
-    {'rank': 9,  'username': 'Challenger',  'full_name': 'Rohan Kumar',    'total_points': 450,  'current_level': 2,  'streak_days': 0},
-    {'rank': 10, 'username': 'NewComer',    'full_name': 'Anjali Verma',   'total_points': 200,  'current_level': 1,  'streak_days': 0},
+    {'rank': 1,  'username': 'TopLearner',  'full_name': 'Riya Sharma',    'total_points': 4200, 'current_level': 9,  'streak_days': 21, 'total_games': 45},
+    {'rank': 2,  'username': 'AceStudent',  'full_name': 'Arjun Mehta',    'total_points': 3800, 'current_level': 8,  'streak_days': 14, 'total_games': 38},
+    {'rank': 3,  'username': 'demo',        'full_name': 'Demo Student',    'total_points': 1250, 'current_level': 5,  'streak_days': 7,  'total_games': 24},
+    {'rank': 4,  'username': 'BrainBox',    'full_name': 'Nisha Kapoor',   'total_points': 1100, 'current_level': 4,  'streak_days': 5,  'total_games': 18},
+    {'rank': 5,  'username': 'QuizKing',    'full_name': 'Dev Patel',      'total_points': 980,  'current_level': 4,  'streak_days': 3,  'total_games': 15},
+    {'rank': 6,  'username': 'StudyPro',    'full_name': 'Meera Nair',     'total_points': 850,  'current_level': 3,  'streak_days': 2,  'total_games': 12},
+    {'rank': 7,  'username': 'FastLearner', 'full_name': 'Aditya Roy',     'total_points': 720,  'current_level': 3,  'streak_days': 1,  'total_games': 10},
+    {'rank': 8,  'username': 'Genius99',    'full_name': 'Priya Singh',    'total_points': 600,  'current_level': 2,  'streak_days': 0,  'total_games': 8},
+    {'rank': 9,  'username': 'Challenger',  'full_name': 'Rohan Kumar',    'total_points': 450,  'current_level': 2,  'streak_days': 0,  'total_games': 6},
+    {'rank': 10, 'username': 'NewComer',    'full_name': 'Anjali Verma',   'total_points': 200,  'current_level': 1,  'streak_days': 0,  'total_games': 3},
 ]
 
 # ── Lookup helpers ────────────────────────────────────────────

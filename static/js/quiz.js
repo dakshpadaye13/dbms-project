@@ -1,5 +1,5 @@
 /* ============================================================
-   LearnQuest AI - Quiz JavaScript Module
+   EduQuest - Quiz JavaScript Module
    Additional quiz utilities (keyboard, review mode, etc.)
    Core quiz logic is embedded in quiz_game.html
    ============================================================ */

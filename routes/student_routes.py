@@ -1,11 +1,12 @@
 # ============================================================
-# LearnQuest AI - Student Routes (Adapted for dbmsminipppp)
+# EduQuest - Student Routes (Adapted for dbmsminipppp)
 # ============================================================
 from flask import (Blueprint, render_template, redirect, url_for, session, jsonify)
 from functools import wraps
 from utils.db_connection import execute_query
 
 student_bp = Blueprint('student', __name__)
+
 
 def login_required(f):
     @wraps(f)
@@ -36,12 +37,12 @@ def dashboard():
         WHERE e.student_id = %s
     """, (user_id,), fetch=True)
 
-    # Calculate rank based on LEADERBOARD or points
+    # Calculate rank based on points
     rank_data = execute_query("""
-        SELECT COUNT(*) + 1 as rank 
+        SELECT COUNT(*) + 1 as user_rank 
         FROM STUDENT WHERE points > %s
     """, (user.get('points', 0),), fetchone=True)
-    rank = rank_data['rank'] if rank_data else '--'
+    rank = rank_data['user_rank'] if rank_data else '--'
 
     return render_template('dashboard.html', user=user, courses=courses, rank=rank)
 

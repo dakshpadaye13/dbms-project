@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Flask Application Entry Point
+# EduQuest - Flask Application Entry Point
 # ============================================================
 from flask import Flask, render_template, session, redirect, url_for
 from config import config
@@ -23,11 +23,13 @@ def create_app():
     from routes.student_routes import student_bp
     from routes.admin_routes   import admin_bp
     from routes.game_routes    import game_bp
+    from routes.teacher_routes import teacher_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(game_bp)
+    app.register_blueprint(teacher_bp)
 
     # ── Landing Page (main route) ─────────────────────────────
     from flask import Blueprint
@@ -38,6 +40,8 @@ def create_app():
         if 'user_id' in session:
             if session.get('role') == 'admin':
                 return redirect(url_for('admin.panel'))
+            if session.get('role') == 'teacher':
+                return redirect(url_for('teacher.dashboard'))
             return redirect(url_for('student.dashboard'))
         return render_template('landing.html')
 
@@ -59,7 +63,7 @@ def create_app():
     def inject_globals():
         from utils.gamification_engine import get_level_name
         return {
-            'app_name': 'LearnQuest AI',
+            'app_name': 'EduQuest',
             'get_level_name': get_level_name
         }
 

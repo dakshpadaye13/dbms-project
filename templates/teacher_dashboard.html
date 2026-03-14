@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+
+  <!-- Header -->
+  <div class="dashboard-header animate-fadeInUp">
+    <h1>Welcome, <span class="gradient-text">{{ teacher.name }}</span> 👩‍🏫</h1>
+    <p style="color:var(--text-secondary);margin-top:6px">
+      Specialization: <strong>{{ teacher.specialization }}</strong>
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="dashboard-grid stagger-children">
+    <div class="stat-card">
+      <div class="stat-icon">📚</div>
+      <div class="stat-value gradient-text">{{ courses|length }}</div>
+      <div class="stat-label">Courses Teaching</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👨‍🎓</div>
+      <div class="stat-value gradient-text">{{ total_enrolled }}</div>
+      <div class="stat-label">Enrolled Students</div>
+    </div>
+  </div>
+
+  <!-- My Courses -->
+  <div class="content-section reveal" style="margin-top:30px">
+    <h3>📚 My Courses</h3>
+    {% if courses %}
+    <div class="games-grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+      {% for course in courses %}
+      <div class="game-card">
+        <div class="game-card-header">
+          <div class="game-card-icon">📖</div>
+          <div class="game-card-title">{{ course.title }}</div>
+          <div class="game-card-desc">Subject: {{ course.subject }}</div>
+        </div>
+        <div class="game-card-footer">
+          <span class="difficulty-badge diff-medium">{{ course.level }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--text-muted)">
+      <div style="font-size:3rem;margin-bottom:12px">📭</div>
+      <p>No courses assigned yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Enrolled Students Table -->
+  <div class="content-section reveal" style="margin-top:30px">
+    <h3>👨‍🎓 Enrolled Students</h3>
+    {% if students %}
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>School</th>
+            <th>Village</th>
+            <th>Level</th>
+            <th>Points</th>
+            <th>Course</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong style="color:var(--text-primary)">{{ s.name }}</strong></td>
+            <td>{{ s.school }}</td>
+            <td>{{ s.village }}</td>
+            <td><span class="difficulty-badge diff-{% if s.level == 'Advanced' %}hard{% elif s.level == 'Intermediate' %}medium{% else %}easy{% endif %}">{{ s.level }}</span></td>
+            <td style="color:var(--purple-light);font-weight:700">⚡ {{ s.points }}</td>
+            <td>{{ s.course_title }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--text-muted)">
+      <p>No students enrolled in your courses yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,12 +1,12 @@
 -- ============================================================
--- LearnQuest AI - MySQL Database Schema
+-- EduQuest - MySQL Database Schema
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS learnquest_ai
+CREATE DATABASE IF NOT EXISTS eduquest_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE learnquest_ai;
+USE eduquest_db;
 
 -- ------------------------------------------------------------
 -- USERS TABLE

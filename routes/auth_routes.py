@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Auth Routes (Login via LOGIN table)
+# EduQuest - Auth Routes (Login / Signup / Logout)
 # Adapted for dbmsminipppp schema
 # ============================================================
 from flask import (Blueprint, render_template, request, redirect,
@@ -58,6 +58,39 @@ def login():
             )
 
             if not login_record:
+                # Fallback: try pattern-based auth (StudentN → passN, TeacherN → teachN)
+                # This works even if LOGIN table is empty
+                import re
+                student_match = re.match(r'^Student(\d+)$', login_id, re.IGNORECASE)
+                teacher_match = re.match(r'^Teacher(\d+)$', login_id, re.IGNORECASE)
+
+                if student_match and password == f"pass{student_match.group(1)}":
+                    student = execute_query(
+                        "SELECT * FROM STUDENT WHERE student_id = %s",
+                        (int(student_match.group(1)),), fetchone=True
+                    )
+                    if student:
+                        session['user_id']   = student['student_id']
+                        session['username']  = student['name']
+                        session['role']      = 'student'
+                        session['full_name'] = student['name']
+                        session['points']    = student.get('points', 0)
+                        lvl_map = {'Beginner': 1, 'Intermediate': 2, 'Advanced': 3}
+                        session['level'] = lvl_map.get(student.get('level', 'Beginner'), 1)
+                        return redirect(url_for('student.dashboard'))
+
+                elif teacher_match and password == f"teach{teacher_match.group(1)}":
+                    teacher = execute_query(
+                        "SELECT * FROM TEACHER WHERE teacher_id = %s",
+                        (int(teacher_match.group(1)),), fetchone=True
+                    )
+                    if teacher:
+                        session['user_id']   = teacher['teacher_id']
+                        session['username']  = teacher['name']
+                        session['role']      = 'teacher'
+                        session['full_name'] = teacher['name']
+                        return redirect(url_for('teacher.dashboard'))
+
                 return render_template('login.html',
                                        error="Invalid Login ID or Password.",
                                        email=login_id)
@@ -89,7 +122,7 @@ def login():
                     session['username']  = teacher['name']
                     session['role']      = 'teacher'
                     session['full_name'] = teacher['name']
-                    return redirect(url_for('student.dashboard'))
+                    return redirect(url_for('teacher.dashboard'))
 
             return render_template('login.html',
                                    error="Login failed. Please try again.",

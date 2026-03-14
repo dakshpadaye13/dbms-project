@@ -1,5 +1,5 @@
 /* ============================================================
-   LearnQuest AI - Puzzle JavaScript Module
+   EduQuest - Puzzle JavaScript Module
    Additional utilities for puzzle interactions
    Core puzzle logic is embedded in puzzle_game.html
    ============================================================ */

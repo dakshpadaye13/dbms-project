@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Game Routes (Quiz, Puzzle, Concept Match)
+# EduQuest - Game Routes (Quiz, Puzzle, Concept Match)
 # ============================================================
 from flask import (Blueprint, render_template, request,
                    session, redirect, url_for, jsonify)
@@ -13,7 +13,8 @@ game_bp = Blueprint('game', __name__)
 def _db_ok():
     try:
         from utils.db_connection import test_connection
-        return test_connection()
+        ok, _ = test_connection()
+        return ok
     except Exception:
         return False
 

@@ -1,5 +1,5 @@
 # ============================================================
-# LearnQuest AI - Quiz Model
+# EduQuest - Quiz Model
 # ============================================================
 from utils.db_connection import execute_query
 

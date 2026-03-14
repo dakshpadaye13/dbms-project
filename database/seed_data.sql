@@ -1,16 +1,16 @@
 -- ============================================================
--- LearnQuest AI - Seed Data
+-- EduQuest - Seed Data
 -- Run AFTER schema.sql
 -- ============================================================
 
-USE learnquest_ai;
+USE eduquest_db;
 
 -- ------------------------------------------------------------
 -- ADMIN USER (password: Admin@123)
 -- Hash generated with werkzeug.security.generate_password_hash
 -- ------------------------------------------------------------
 INSERT INTO users (username, email, password_hash, role, full_name, total_points, current_level) VALUES
-('admin', 'admin@learnquest.ai', 'pbkdf2:sha256:260000$salt$hash_placeholder', 'admin', 'LearnQuest Admin', 9999, 99);
+('admin', 'admin@eduquest.ai', 'pbkdf2:sha256:260000$salt$hash_placeholder', 'admin', 'EduQuest Admin', 9999, 99);
 
 -- Note: Replace password_hash with actual generated hash via Flask shell:
 -- from werkzeug.security import generate_password_hash
