@@ -7,12 +7,12 @@
     <!-- Logo -->
     <div class="auth-logo">
       <div class="logo-big">
-        <span style="background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🎓 DBMS Project DB</span>
+        <span style="background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🎓 DBMS Project</span>
       </div>
     </div>
 
     <h1 class="auth-title">Welcome Back</h1>
-    <p class="auth-sub">Enter your Student ID or Name to log in</p>
+    <p class="auth-sub">Log in with your student or teacher credentials</p>
 
     {% if error %}
     <div class="flash flash-error" style="margin-bottom:20px;">{{ error }}</div>
@@ -20,11 +20,19 @@
 
     <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
       <div class="form-group">
-        <label class="form-label" for="email">Student ID or Name</label>
+        <label class="form-label" for="email">Login ID</label>
         <input type="text" id="email" name="email" class="form-input"
-               placeholder="e.g., Student1 or 1" value="{{ email or '' }}" required autofocus>
+               placeholder="e.g., Student1 or Teacher1" value="{{ email or '' }}" required autofocus>
       </div>
-
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div style="position:relative">
+          <input type="password" id="password" name="password" class="form-input"
+                 placeholder="••••••••" required style="padding-right:48px">
+          <button type="button" onclick="togglePwd()"
+                  style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:1.1rem">👁</button>
+        </div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;padding:15px;font-size:1rem;margin-top:20px;">
         Sign In <span>→</span>
       </button>
@@ -33,13 +41,15 @@
     <!-- Divider -->
     <div style="display:flex;align-items:center;gap:16px;margin:24px 0">
       <div style="flex:1;height:1px;background:var(--border)"></div>
-      <span style="color:var(--text-muted);font-size:0.82rem">OR</span>
+      <span style="color:var(--text-muted);font-size:0.82rem">Credentials</span>
       <div style="flex:1;height:1px;background:var(--border)"></div>
     </div>
 
-    <!-- Admin hint -->
-    <div style="background:rgba(124,58,237,0.08);border:1px solid var(--border-glow);border-radius:var(--radius-md);padding:12px 16px;font-size:0.83rem;color:var(--text-muted);text-align:center">
-      🔐 To view all database tables, log in as <strong style="color:var(--purple-light)">admin</strong>
+    <!-- Hint box -->
+    <div style="background:rgba(124,58,237,0.08);border:1px solid var(--border-glow);border-radius:var(--radius-md);padding:14px 16px;font-size:0.83rem;color:var(--text-muted)">
+      <div style="margin-bottom:6px">👨‍🎓 <strong style="color:var(--purple-light)">Student:</strong> Login ID = <code>Student1</code> … <code>Student150</code> &nbsp;|&nbsp; Password = <code>pass1</code> … <code>pass150</code></div>
+      <div style="margin-bottom:6px">👩‍🏫 <strong style="color:var(--purple-light)">Teacher:</strong> Login ID = <code>Teacher1</code> … <code>Teacher25</code> &nbsp;|&nbsp; Password = <code>teach1</code> … <code>teach25</code></div>
+      <div>🔐 <strong style="color:var(--amber)">Admin:</strong> Login ID = <code>admin</code> &nbsp;|&nbsp; Password = <code>admin</code></div>
     </div>
 
   </div>
@@ -47,3 +57,11 @@
 {% endblock %}
 
 {% block show_footer %}{% endblock %}
+{% block extra_js %}
+<script>
+function togglePwd() {
+  const inp = document.getElementById('password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+</script>
+{% endblock %}

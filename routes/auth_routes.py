@@ -1,18 +1,11 @@
 # ============================================================
-# LearnQuest AI - Auth Routes (Login / Signup / Logout)
+# LearnQuest AI - Auth Routes (Login via LOGIN table)
 # Adapted for dbmsminipppp schema
 # ============================================================
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, session, flash, jsonify)
 
 auth_bp = Blueprint('auth', __name__)
-
-DB_AVAILABLE = True
-
-try:
-    from models.user import User
-except Exception:
-    DB_AVAILABLE = False
 
 
 def _db_ok():
@@ -24,11 +17,9 @@ def _db_ok():
         return False
 
 
-# ── Signup ────────────────────────────────────────────────────
+# ── Signup - not used in this static schema ───────────────────
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # Signup doesn't make sense in this static DBMS schema right now,
-    # redirecting to login.
     return redirect(url_for('auth.login'))
 
 
@@ -41,10 +32,11 @@ def login():
         return redirect(url_for('student.dashboard'))
 
     if request.method == 'POST':
-        login_key = request.form.get('email', '').strip() # Reuse the email field for student name/id or admin
-        
-        # Hardcoded Admin Login
-        if login_key.lower() == 'admin':
+        login_id = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+
+        # ── Hardcoded Admin bypass ─────────────────────────────
+        if login_id.lower() == 'admin' and password == 'admin':
             session['user_id']   = 0
             session['username']  = 'Admin'
             session['role']      = 'admin'
@@ -52,38 +44,61 @@ def login():
             return redirect(url_for('admin.panel'))
 
         if not _db_ok():
-            flash('⚠ Database offline — cannot resolve student.', 'warning')
-            return render_template('login.html', error="Database offline.", email=login_key)
+            return render_template('login.html',
+                                   error="Database offline. Please start MySQL.",
+                                   email=login_id)
 
         try:
-            # Try to fetch by ID or Name
-            user = None
-            if login_key.isdigit():
-                user = User.get_student_by_id(int(login_key))
-            if not user:
-                user = User.get_student_by_name(login_key)
+            from utils.db_connection import execute_query
 
-            if user:
-                session.permanent = True
-                session['user_id']   = user['student_id']
-                session['username']  = user['name']
-                session['role']      = 'student'
-                session['full_name'] = user['name']
-                session['points']    = user.get('points', 0)
-                
-                # Assign arbitrary level based on ENUM mapping
-                lvl_map = {'Beginner': 1, 'Intermediate': 2, 'Advanced': 3}
-                session['level']     = lvl_map.get(user.get('level', 'Beginner'), 1)
+            # Query the LOGIN table
+            login_record = execute_query(
+                "SELECT * FROM LOGIN WHERE login_id = %s AND password = %s",
+                (login_id, password), fetchone=True
+            )
 
-                return redirect(url_for('student.dashboard'))
-            else:
+            if not login_record:
                 return render_template('login.html',
-                                       error="Student not found. Please enter a valid Student Name (e.g., Student1) or ID.",
-                                       email=login_key)
+                                       error="Invalid Login ID or Password.",
+                                       email=login_id)
+
+            role = login_record['role']
+
+            if role == 'student':
+                student = execute_query(
+                    "SELECT * FROM STUDENT WHERE student_id = %s",
+                    (login_record['student_id'],), fetchone=True
+                )
+                if student:
+                    session['user_id']   = student['student_id']
+                    session['username']  = student['name']
+                    session['role']      = 'student'
+                    session['full_name'] = student['name']
+                    session['points']    = student.get('points', 0)
+                    lvl_map = {'Beginner': 1, 'Intermediate': 2, 'Advanced': 3}
+                    session['level'] = lvl_map.get(student.get('level', 'Beginner'), 1)
+                    return redirect(url_for('student.dashboard'))
+
+            elif role == 'teacher':
+                teacher = execute_query(
+                    "SELECT * FROM TEACHER WHERE teacher_id = %s",
+                    (login_record['teacher_id'],), fetchone=True
+                )
+                if teacher:
+                    session['user_id']   = teacher['teacher_id']
+                    session['username']  = teacher['name']
+                    session['role']      = 'teacher'
+                    session['full_name'] = teacher['name']
+                    return redirect(url_for('student.dashboard'))
+
+            return render_template('login.html',
+                                   error="Login failed. Please try again.",
+                                   email=login_id)
+
         except Exception as e:
             return render_template('login.html',
                                    error=f"Database error: {str(e)}",
-                                   email=login_key)
+                                   email=login_id)
 
     return render_template('login.html')
 
@@ -95,7 +110,7 @@ def logout():
     return redirect(url_for('main.landing'))
 
 
-# ── API: Check username uniqueness ────────────────────────────
+# ── Stub ──────────────────────────────────────────────────────
 @auth_bp.route('/api/check-username')
 def check_username():
     return jsonify({'available': False})

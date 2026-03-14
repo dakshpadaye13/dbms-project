@@ -57,6 +57,15 @@ student_id INT,
 points INT,
 FOREIGN KEY(student_id) REFERENCES STUDENT(student_id)
 );
+CREATE TABLE LOGIN (
+login_id   VARCHAR(50)  NOT NULL PRIMARY KEY,
+password   VARCHAR(100) NOT NULL,
+role       ENUM('student','teacher') NOT NULL,
+student_id INT DEFAULT NULL,
+teacher_id INT DEFAULT NULL,
+FOREIGN KEY(student_id) REFERENCES STUDENT(student_id),
+FOREIGN KEY(teacher_id) REFERENCES TEACHER(teacher_id)
+);
 INSERT INTO TEACHER(name,specialization)
 SELECT CONCAT('Teacher',n),
 ELT(FLOOR(1+RAND()*3),'Math','Science','English')
@@ -130,6 +139,16 @@ SELECT student_id,points
 FROM STUDENT
 ORDER BY points DESC
 LIMIT 20;
+
+-- Seed LOGIN table for students (login_id = Student name, password = 'pass' + student_id)
+INSERT INTO LOGIN (login_id, password, role, student_id)
+SELECT name, CONCAT('pass', student_id), 'student', student_id
+FROM STUDENT;
+
+-- Seed LOGIN table for teachers (login_id = Teacher name, password = 'teach' + teacher_id)
+INSERT INTO LOGIN (login_id, password, role, teacher_id)
+SELECT name, CONCAT('teach', teacher_id), 'teacher', teacher_id
+FROM TEACHER;
 SELECT * FROM STUDENT LIMIT 50;
 SELECT s.name,l.points
 FROM LEADERBOARD l
