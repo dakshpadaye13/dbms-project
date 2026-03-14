@@ -12,7 +12,8 @@ student_bp = Blueprint('student', __name__)
 def _db_ok():
     try:
         from utils.db_connection import test_connection
-        return test_connection()
+        ok, _ = test_connection()
+        return ok
     except Exception:
         return False
 
@@ -25,11 +26,23 @@ def _level_info(points):
     for i, t in enumerate(LEVEL_THRESHOLDS):
         if points >= t:
             level = i + 1
-    next_t = LEVEL_THRESHOLDS[min(level, len(LEVEL_THRESHOLDS)-1)]
+    next_t = LEVEL_THRESHOLDS[min(level, len(LEVEL_THRESHOLDS)-1)] if level < len(LEVEL_THRESHOLDS) else None
     prev_t = LEVEL_THRESHOLDS[level - 1]
-    pct    = int((points - prev_t) / max(next_t - prev_t, 1) * 100) if next_t > prev_t else 100
-    return {'current_level': level, 'next_threshold': next_t,
-            'current_threshold': prev_t, 'percentage': pct}
+    
+    if next_t:
+        pct = int((points - prev_t) / max(next_t - prev_t, 1) * 100)
+        rem = next_t - points
+    else:
+        pct = 100
+        rem = 0
+        
+    return {
+        'current_level': level,
+        'next_threshold': next_t,
+        'current_threshold': prev_t,
+        'percent': pct,
+        'remaining': rem
+    }
 
 def _level_name(level):
     return LEVEL_NAMES[min(level - 1, len(LEVEL_NAMES)-1)]

@@ -21,7 +21,8 @@ def _db_ok():
     """Quick DB reachability probe."""
     try:
         from utils.db_connection import test_connection
-        return test_connection()
+        ok, _ = test_connection()
+        return ok
     except Exception:
         return False
 

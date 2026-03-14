@@ -13,7 +13,8 @@ game_bp = Blueprint('game', __name__)
 def _db_ok():
     try:
         from utils.db_connection import test_connection
-        return test_connection()
+        ok, _ = test_connection()
+        return ok
     except Exception:
         return False
 
