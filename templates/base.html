@@ -12,6 +12,7 @@
   <!-- Stylesheets -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/premium_fx.css') }}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -139,5 +140,6 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+<script src="{{ url_for('static', filename='js/premium_fx.js') }}" defer></script>
 </body>
 </html>

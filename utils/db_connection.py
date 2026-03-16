@@ -1,90 +1,50 @@
 # ============================================================
-# EduQuest - MySQL Database Connection Utility
+# EduQuest - SQLite Database Connection Utility
 # ============================================================
-import mysql.connector
-from mysql.connector import Error, pooling
+import sqlite3
+import os
 from config import config
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Connection pool for efficiency
-_pool = None
-
-
-def init_pool():
-    """Initialize a MySQL connection pool."""
-    global _pool
-    try:
-        _pool = pooling.MySQLConnectionPool(
-            pool_name="eduquest_pool",
-            pool_size=5,
-            host=config.MYSQL_HOST,
-            port=config.MYSQL_PORT,
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD,
-            database=config.MYSQL_DB,
-            charset=config.MYSQL_CHARSET,
-            autocommit=False
-        )
-        logger.info("MySQL connection pool created successfully.")
-    except Error as e:
-        logger.error(f"Error creating connection pool: {e}")
-        _pool = None
-
-
 def get_connection():
-    """
-    Retrieve a connection from the pool.
-    Falls back to a direct connection if pool is unavailable.
-    """
-    global _pool
-    if _pool is None:
-        init_pool()
+    """Establish a connection to the SQLite database."""
     try:
-        if _pool:
-            return _pool.get_connection()
-        # Fallback: direct connection
-        return mysql.connector.connect(
-            host=config.MYSQL_HOST,
-            port=config.MYSQL_PORT,
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD,
-            database=config.MYSQL_DB,
-            charset=config.MYSQL_CHARSET
-        )
-    except Error as e:
+        conn = sqlite3.connect(config.DB_PATH)
+        # Enable foreign keys
+        conn.execute("PRAGMA foreign_keys = ON")
+        # Ensure results are returned as dictionaries (row factories)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except Exception as e:
         logger.error(f"Database connection error: {e}")
         raise
 
+def _convert_query(query):
+    """Convert MySQL-style placeholders (%s) to SQLite (?) style."""
+    return query.replace('%s', '?')
 
 def execute_query(query, params=None, fetch=False, fetchone=False, lastrowid=False):
     """
     Execute a parameterized SQL query.
-
-    Args:
-        query     (str): SQL query string with %s placeholders.
-        params   (tuple): Optional query parameters.
-        fetch    (bool): Fetch all results.
-        fetchone (bool): Fetch a single result.
-        lastrowid(bool): Return the last inserted row id.
-
-    Returns:
-        Query results or row id depending on flags.
     """
     conn = None
     cursor = None
+    query = _convert_query(query)
     try:
-        conn   = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        conn = get_connection()
+        cursor = conn.cursor()
         cursor.execute(query, params or ())
 
         if fetch:
-            result = cursor.fetchall()
+            rows = cursor.fetchall()
+            result = [dict(row) for row in rows]
             conn.commit()
             return result
         elif fetchone:
-            result = cursor.fetchone()
+            row = cursor.fetchone()
+            result = dict(row) if row else None
             conn.commit()
             return result
         elif lastrowid:
@@ -94,7 +54,7 @@ def execute_query(query, params=None, fetch=False, fetchone=False, lastrowid=Fal
             conn.commit()
             return cursor.rowcount
 
-    except Error as e:
+    except Exception as e:
         if conn:
             conn.rollback()
         logger.error(f"Query execution error: {e}\nQuery: {query}\nParams: {params}")
@@ -102,21 +62,21 @@ def execute_query(query, params=None, fetch=False, fetchone=False, lastrowid=Fal
     finally:
         if cursor:
             cursor.close()
-        if conn and conn.is_connected():
+        if conn:
             conn.close()
 
-
 def execute_many(query, params_list):
-    """Execute the same query with multiple parameter sets (batch insert/update)."""
+    """Execute the same query with multiple parameter sets."""
     conn = None
     cursor = None
+    query = _convert_query(query)
     try:
-        conn   = get_connection()
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.executemany(query, params_list)
         conn.commit()
         return cursor.rowcount
-    except Error as e:
+    except Exception as e:
         if conn:
             conn.rollback()
         logger.error(f"Batch execution error: {e}")
@@ -124,17 +84,19 @@ def execute_many(query, params_list):
     finally:
         if cursor:
             cursor.close()
-        if conn and conn.is_connected():
+        if conn:
             conn.close()
-
 
 def test_connection():
-    """Verify DB connectivity - used on startup."""
+    """Verify DB connectivity."""
     try:
+        if not os.path.exists(os.path.dirname(config.DB_PATH)):
+            os.makedirs(os.path.dirname(config.DB_PATH), exist_ok=True)
+            
         conn = get_connection()
-        if conn.is_connected():
-            info = conn.get_server_info()
-            conn.close()
-            return True, f"Connected to MySQL Server version {info}"
-    except Error as e:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        conn.close()
+        return True, "Connected to SQLite database"
+    except Exception as e:
         return False, str(e)

@@ -3,10 +3,37 @@
 
 {% block content %}
 <div class="admin-wrap">
-  <div style="margin-bottom:32px">
-    <span class="section-tag">🛡 Admin</span>
-    <h1>Database <span class="gradient-text">Viewer</span></h1>
-    <p style="color:var(--text-secondary)">Viewing tables for `dbmsminipppp`</p>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px">
+    <div>
+      <span class="section-tag">🛡 Admin System</span>
+      <h1>Database <span class="gradient-text">Viewer</span></h1>
+      <p style="color:var(--text-secondary)">Manage and monitor platform data in real-time.</p>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-sm">🚪 Logout</a>
+  </div>
+
+  <!-- Admin Overview Stats -->
+  <div class="dashboard-grid stagger-children" style="margin-bottom: 32px;">
+    <div class="stat-card">
+      <div class="stat-icon">👨‍🎓</div>
+      <div class="stat-value">{{ tables_data.get('STUDENT', [])|length }}</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👩‍🏫</div>
+      <div class="stat-value">{{ tables_data.get('TEACHER', [])|length }}</div>
+      <div class="stat-label">Total Teachers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📖</div>
+      <div class="stat-value">{{ tables_data.get('COURSE', [])|length }}</div>
+      <div class="stat-label">Total Courses</div>
+    </div>
+    <div class="stat-card">
+       <div class="stat-icon">🧩</div>
+       <div class="stat-value">{{ (tables_data.get('QUIZ', [])|length) + (tables_data.get('PUZZLE', [])|length) + (tables_data.get('SCRAMBLE', [])|length) }}</div>
+       <div class="stat-label">Total Games</div>
+    </div>
   </div>
 
   <div class="admin-grid">

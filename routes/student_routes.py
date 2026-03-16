@@ -53,12 +53,12 @@ def dashboard():
 def leaderboard():
     user_id = session['user_id']
     # Use the LEADERBOARD table joined with STUDENT
+    # SQLite 3.25+ support window functions. ROW_NUMBER() is standard.
     board = execute_query("""
         SELECT s.name as username, l.points, 
-               (@row_number:=@row_number + 1) AS rank
+               ROW_NUMBER() OVER (ORDER BY l.points DESC) AS rank
         FROM LEADERBOARD l
         JOIN STUDENT s ON s.student_id = l.student_id
-        JOIN (SELECT @row_number:=0) r
         ORDER BY l.points DESC
     """, fetch=True)
 
@@ -77,9 +77,24 @@ def leaderboard():
 @student_bp.route('/games')
 @login_required
 def games():
-    courses = execute_query("SELECT * FROM COURSE", fetch=True)
-    puzzles = execute_query("SELECT * FROM PUZZLE", fetch=True)
-    return render_template('games.html', courses=courses, puzzles=puzzles)
+    # The template expects 'id', 'subject_name', 'question_count', 'time_limit', etc.
+    # We map COURSE to quizzes for the UI.
+    courses = execute_query("""
+        SELECT *, course_id as id, subject as subject_name,
+               0 as question_count, 300 as time_limit, 10 as points_per_question,
+               'medium' as difficulty
+        FROM COURSE
+    """, fetch=True)
+    
+    # The template expects 'id', 'title', 'description' for puzzles
+    puzzles = execute_query("""
+        SELECT *, puzzle_id as id, 
+               'Puzzle ' || puzzle_id as title,
+               'Difficulty: ' || difficulty as description 
+        FROM PUZZLE
+    """, fetch=True)
+    
+    return render_template('games.html', courses=courses, puzzles=puzzles, quizzes=courses)
 
 
 # ── Profile ───────────────────────────────────────────────────

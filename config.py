@@ -10,13 +10,8 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
 
-    # MySQL Database Configuration
-    MYSQL_HOST     = os.environ.get('MYSQL_HOST',     'localhost')
-    MYSQL_PORT     = int(os.environ.get('MYSQL_PORT', 3306))
-    MYSQL_USER     = os.environ.get('MYSQL_USER',     'root')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'root')       # Change in production
-    MYSQL_DB       = os.environ.get('MYSQL_DB',       'dbmsminipppp')
-    MYSQL_CHARSET  = 'utf8mb4'
+    # SQLite Database Configuration
+    DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'eduquest.db')
 
     # Gamification Settings
     POINTS_PER_CORRECT_ANSWER = 10

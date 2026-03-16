@@ -152,3 +152,91 @@ document.querySelectorAll('[data-typewriter]').forEach(el => {
   const texts = el.dataset.typewriter.split('|');
   typeWriter(el, texts);
 });
+
+// ── 3D Tilt Effect ────────────────────────────────────────────
+function applyTilt(el) {
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (centerY - y) / 10;
+    const rotateY = (x - centerX) / 10;
+
+    // Use a custom property to store the tilt transform so it can be merged if needed
+    el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+    el.style.transition = 'transform 0.1s ease';
+  });
+
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+    el.style.transition = 'transform 0.5s ease';
+  });
+}
+
+// Global initialization for all cards
+setTimeout(() => {
+  document.querySelectorAll('.glass-card, .hero-card-demo').forEach(applyTilt);
+}, 1000);
+
+// ── 3D Slider Logic ──────────────────────────────────────────
+class Slider3D {
+  constructor(container) {
+    this.container = container;
+    this.track = container.querySelector('.slider-3d-track');
+    this.items = container.querySelectorAll('.slider-item');
+    this.currentIndex = 0;
+    this.visibleCount = 3; 
+
+    this.init();
+  }
+
+  init() {
+    this.updateSlider();
+    const prevBtn = document.getElementById('prevSlide');
+    const nextBtn = document.getElementById('nextSlide');
+    if (prevBtn) prevBtn.addEventListener('click', () => this.prev());
+    if (nextBtn) nextBtn.addEventListener('click', () => this.next());
+
+    setInterval(() => this.next(), 6000);
+  }
+
+  updateSlider() {
+    const itemWidth = 100 / this.visibleCount;
+    const offset = -this.currentIndex * itemWidth;
+    
+    // The track handles the horizontal shift
+    this.track.style.transform = `translateX(${offset}%)`;
+    
+    this.items.forEach((item, index) => {
+      const isActive = index >= this.currentIndex && index < this.currentIndex + this.visibleCount;
+      item.classList.toggle('active', isActive);
+      
+      // We apply subtle depth to the slider items
+      if (isActive) {
+        item.style.opacity = '1';
+        item.style.visibility = 'visible';
+      } else {
+        item.style.opacity = '0.3';
+        // Only hide if far away to allow smooth transition
+        item.style.visibility = (Math.abs(index - this.currentIndex) > this.visibleCount) ? 'hidden' : 'visible';
+      }
+    });
+  }
+
+  next() {
+    const maxIndex = this.items.length - this.visibleCount;
+    this.currentIndex = (this.currentIndex >= maxIndex) ? 0 : this.currentIndex + 1;
+    this.updateSlider();
+  }
+
+  prev() {
+    const maxIndex = this.items.length - this.visibleCount;
+    this.currentIndex = (this.currentIndex <= 0) ? maxIndex : this.currentIndex - 1;
+    this.updateSlider();
+  }
+}
+
+const sliderEl = document.querySelector('.slider-3d-container');
+if (sliderEl) new Slider3D(sliderEl);
