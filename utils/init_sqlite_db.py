@@ -110,62 +110,81 @@ def init_db():
     cursor.executescript(schema)
     print("Schema created successfully.")
 
-    # Seed Data
-    seed_sql = """
-    INSERT INTO TEACHER (name, specialization) VALUES 
-    ('Teacher1', 'Math'), ('Teacher2', 'Science'), ('Teacher3', 'English'), ('Teacher4', 'Math'), ('Teacher5', 'Science');
+    # Seed Data (Dynamic Generation to match MySQL schema)
+    print("Seeding Teachers...")
+    specializations = ['Math', 'Science', 'English']
+    teachers = []
+    for i in range(1, 26):
+        teachers.append((f"Teacher{i}", specializations[i % 3]))
+    cursor.executemany("INSERT INTO TEACHER (name, specialization) VALUES (?, ?)", teachers)
 
-    INSERT INTO STUDENT (name, school, village, level, points) VALUES 
-    ('Student1', 'Rural School', 'Khed', 'Beginner', 45),
-    ('Student2', 'Rural School', 'Satara', 'Intermediate', 75),
-    ('Student3', 'Rural School', 'Nashik', 'Advanced', 90),
-    ('Student4', 'Rural School', 'Pune', 'Beginner', 20),
-    ('Student5', 'Rural School', 'Ahmednagar', 'Intermediate', 60);
+    print("Seeding Students...")
+    villages = ['Khed', 'Satara', 'Nashik', 'Pune', 'Ahmednagar']
+    levels = ['Beginner', 'Intermediate', 'Advanced']
+    students = []
+    for i in range(1, 151):
+        students.append((
+            f"Student{i}", 
+            "Rural School", 
+            villages[i % 5], 
+            levels[i % 3], 
+            (i * 7) % 100
+        ))
+    cursor.executemany("INSERT INTO STUDENT (name, school, village, level, points) VALUES (?, ?, ?, ?, ?)", students)
 
-    INSERT INTO COURSE (title, subject, level, teacher_id) VALUES
-    ('Basic Math', 'Math', 'Level1', 1),
-    ('Algebra', 'Math', 'Level2', 4),
-    ('General Science', 'Science', 'Level1', 2),
-    ('Physics Basics', 'Science', 'Level2', 5),
-    ('English Grammar', 'English', 'Level1', 3);
+    print("Seeding Courses...")
+    courses = [
+        ('Basic Math', 'Math', 'Level1', 1),
+        ('Algebra', 'Math', 'Level2', 4),
+        ('General Science', 'Science', 'Level1', 2),
+        ('Physics Basics', 'Science', 'Level2', 5),
+        ('English Grammar', 'English', 'Level1', 3),
+        ('Story Reading', 'English', 'Level1', 6),
+        ('Geometry', 'Math', 'Level2', 7),
+        ('Biology', 'Science', 'Level2', 8),
+        ('Essay Writing', 'English', 'Level2', 9),
+        ('Advanced Math', 'Math', 'Level3', 10)
+    ]
+    cursor.executemany("INSERT INTO COURSE (title, subject, level, teacher_id) VALUES (?, ?, ?, ?)", courses)
 
-    INSERT INTO ENROLL (student_id, course_id) VALUES
-    (1, 1), (2, 2), (3, 3), (4, 4), (5, 5);
+    print("Seeding Enrollments...")
+    enrollments = []
+    for i in range(1, 151):
+        enrollments.append((i, (i % 10) + 1))
+    cursor.executemany("INSERT INTO ENROLL (student_id, course_id) VALUES (?, ?)", enrollments)
 
-    INSERT INTO QUIZ (course_id, marks) VALUES
-    (1, 100), (2, 100), (3, 100);
+    print("Seeding Quiz, Puzzles, Scramble...")
+    cursor.execute("INSERT INTO QUIZ (course_id, marks) VALUES (1, 100), (2, 100), (3, 100)")
+    cursor.execute("INSERT INTO PUZZLE (difficulty) VALUES ('Easy'), ('Medium'), ('Hard')")
+    cursor.execute("INSERT INTO SCRAMBLE (word_type, correct_answer) VALUES ('Animal', 'Tiger'), ('Fruit', 'Apple'), ('Country', 'India')")
 
-    INSERT INTO PUZZLE (difficulty) VALUES
-    ('Easy'), ('Medium'), ('Hard');
-
-    INSERT INTO SCRAMBLE (word_type, correct_answer) VALUES
-    ('Animal', 'Tiger'), ('Fruit', 'Apple'), ('Country', 'India');
-
+    print("Seeding Badges...")
+    cursor.execute("""
     INSERT INTO BADGE (name, description) VALUES
     ('Starter', 'Completed first lesson'),
     ('Quiz Master', 'Scored above 80 in quiz'),
     ('Puzzle Solver', 'Solved puzzles'),
-    ('Top Performer', 'Top 10 leaderboard');
+    ('Top Performer', 'Top 10 leaderboard')
+    """)
 
-    INSERT INTO LEADERBOARD (student_id, points) VALUES
-    (3, 90), (2, 75), (5, 60), (1, 45);
+    print("Seeding Leaderboard...")
+    cursor.execute("""
+    INSERT INTO LEADERBOARD (student_id, points)
+    SELECT student_id, points FROM STUDENT ORDER BY points DESC LIMIT 20
+    """)
 
-    INSERT INTO LOGIN (login_id, password, role, student_id) VALUES
-    ('Student1', 'pass1', 'student', 1),
-    ('Student2', 'pass2', 'student', 2),
-    ('Student3', 'pass3', 'student', 3),
-    ('Student4', 'pass4', 'student', 4),
-    ('Student5', 'pass5', 'student', 5);
+    print("Seeding Login accounts...")
+    # Student logins
+    student_logins = []
+    for i in range(1, 151):
+        student_logins.append((f"Student{i}", f"pass{i}", "student", i))
+    cursor.executemany("INSERT INTO LOGIN (login_id, password, role, student_id) VALUES (?, ?, ?, ?)", student_logins)
 
-    INSERT INTO LOGIN (login_id, password, role, teacher_id) VALUES
-    ('Teacher1', 'teach1', 'teacher', 1),
-    ('Teacher2', 'teach2', 'teacher', 2),
-    ('Teacher3', 'teach3', 'teacher', 3),
-    ('Teacher4', 'teach4', 'teacher', 4),
-    ('Teacher5', 'teach5', 'teacher', 5);
-    """
-
-    cursor.executescript(seed_sql)
+    # Teacher logins
+    teacher_logins = []
+    for i in range(1, 26):
+        teacher_logins.append((f"Teacher{i}", f"teach{i}", "teacher", i))
+    cursor.executemany("INSERT INTO LOGIN (login_id, password, role, teacher_id) VALUES (?, ?, ?, ?)", teacher_logins)
     conn.commit()
     conn.close()
     print("Seed data inserted successfully.")
