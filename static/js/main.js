@@ -83,7 +83,7 @@ if (sections.length && navLinks.length) {
 // ── Particle burst on button click ───────────────────────────
 document.querySelectorAll('.btn-primary').forEach(btn => {
   btn.addEventListener('click', function(e) {
-    const colors = ['#7c3aed','#3b82f6','#06b6d4','#f59e0b','#ec4899'];
+    const colors = ['#a855f7','#22d3ee','#f0abfc','#f59e0b','#39ff14'];
     for (let i = 0; i < 8; i++) {
       const p = document.createElement('div');
       p.className = 'particle';

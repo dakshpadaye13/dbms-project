@@ -217,13 +217,19 @@ quizzes, puzzles, and interactive challenges.{% endblock %}
           New Badge! 🏅</div>
       </div>
     </div>
+
+    <!-- Scroll-down hint -->
+    <div id="eq-scroll-hint">
+      <span>Scroll down & dive in</span>
+      <div class="arrow">↓</div>
+    </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════
     PROBLEM SECTION
 ════════════════════════════════════════════════════════════ -->
   <section
-    style="padding:80px 0;background:linear-gradient(180deg,transparent,rgba(124,58,237,0.05),transparent);position:relative;z-index:1"
+    style="padding:80px 0;background:linear-gradient(180deg,transparent,rgba(168,85,247,0.05),transparent);position:relative;z-index:1"
     id="problem">
     <div class="container" style="text-align:center">
       <span class="section-tag reveal">❓ The Problem</span>
@@ -304,10 +310,48 @@ quizzes, puzzles, and interactive challenges.{% endblock %}
   </section>
 
   <!-- ════════════════════════════════════════════════════════════
+    GAME MODES — HORIZONTAL SCROLL
+════════════════════════════════════════════════════════════ -->
+  <section class="hscroll-section" style="padding:var(--section-pad);position:relative;z-index:1" id="game-modes">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag reveal">🎮 Game Modes</span>
+        <h2 class="reveal">Explore The <span class="gradient-text">Arena</span></h2>
+        <p class="reveal">Scroll through our game categories — or just keep scrolling down.</p>
+      </div>
+      <div class="hscroll-track">
+        {% for mode in [
+        ('🧠','Timed Quiz','Race against the clock answering subject-specific questions. Earn bonus points for speed and perfect streaks.','var(--purple)'),
+        ('🧩','Drag & Match','Match concepts, dates, and definitions by dragging items into the correct categories.','var(--blue)'),
+        ('⚡','Speed Run','Answer as many questions as possible in 60 seconds. Pure adrenaline learning.','var(--cyan)'),
+        ('🏆','Boss Battle','Take on the weekly challenge quiz — the hardest questions across all subjects.','var(--amber)'),
+        ('🎯','Accuracy Mode','No time limit, but every wrong answer costs you points. Precision matters.','var(--green)'),
+        ('🔥','Streak Challenge','Build the longest correct-answer streak you can. Multiplier increases every 5 correct.','var(--pink)'),
+        ('📚','Study Mode','Practice at your own pace with explanations after each question. No pressure.','var(--purple)'),
+        ('🌍','Global Showdown','Compete in live ranked matches against students worldwide.','var(--blue)')
+        ] %}
+        <div class="hscroll-card glass-card" style="padding:32px 28px;display:flex;flex-direction:column;cursor:pointer">
+          <div style="width:52px;height:52px;background:{{ mode[3] }}22;border:1px solid {{ mode[3] }}44;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px">
+            {{ mode[0] }}</div>
+          <h3 style="margin-bottom:10px">{{ mode[1] }}</h3>
+          <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.6;flex:1">{{ mode[2] }}</p>
+          <div style="margin-top:16px">
+            <span class="btn btn-ghost btn-sm">Play Now →</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="hscroll-progress">
+        <div class="hscroll-progress-fill"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════
     HOW IT WORKS
 ════════════════════════════════════════════════════════════ -->
   <section
-    style="padding:var(--section-pad);background:linear-gradient(180deg,transparent,rgba(59,130,246,0.04),transparent);position:relative;z-index:1"
+    style="padding:var(--section-pad);background:linear-gradient(180deg,transparent,rgba(34,211,238,0.04),transparent);position:relative;z-index:1"
     id="how-it-works">
     <div class="container">
       <div class="section-header">
@@ -318,7 +362,7 @@ quizzes, puzzles, and interactive challenges.{% endblock %}
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative" class="stagger-children">
         <!-- Connecting gradient line -->
         <div
-          style="position:absolute;top:36px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--purple),var(--blue));z-index:0;opacity:0.4">
+          style="position:absolute;top:36px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,#a855f7,#22d3ee);z-index:0;opacity:0.4">
         </div>
         {% for step in [
         ('1','📚','Choose Subject','Pick from 6+ subjects'),
@@ -512,7 +556,7 @@ quizzes, puzzles, and interactive challenges.{% endblock %}
 ════════════════════════════════════════════════════════════ -->
   <section style="padding:100px 0;position:relative;z-index:1;overflow:hidden">
     <div class="hero-orb"
-      style="width:700px;height:700px;background:radial-gradient(circle,rgba(124,58,237,0.2),transparent 70%);top:-200px;left:50%;transform:translateX(-50%)">
+      style="width:700px;height:700px;background:radial-gradient(circle,rgba(168,85,247,0.2),transparent 70%);top:-200px;left:50%;transform:translateX(-50%)">
     </div>
     <div class="container" style="text-align:center;position:relative;z-index:1">
       <span class="section-tag reveal">🚀 Get Started</span>

@@ -298,6 +298,56 @@
   .animate-glow { animation-duration: 4s; }
 }
 
+/* ── Glitch text effect ────────────────────────────────────── */
+@keyframes glitchSlice {
+  0%   { clip-path: inset(0 0 0 0); transform: translate(0); }
+  20%  { clip-path: inset(20% 0 60% 0); transform: translate(-3px, 0); }
+  40%  { clip-path: inset(60% 0 10% 0); transform: translate(3px, 0); }
+  60%  { clip-path: inset(40% 0 30% 0); transform: translate(-2px, 0); }
+  80%  { clip-path: inset(10% 0 70% 0); transform: translate(2px, 0); }
+  100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+}
+
+.glitch-active {
+  position: relative;
+}
+.glitch-active::before,
+.glitch-active::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.glitch-active::before {
+  color: #22d3ee;
+  animation: glitchSlice 120ms steps(2) 1;
+  z-index: -1;
+}
+.glitch-active::after {
+  color: #ef4444;
+  animation: glitchSlice 120ms steps(2) reverse 1;
+  z-index: -1;
+}
+
+/* ── Shimmer sweep for XP bars ─────────────────────────────── */
+@keyframes shimmerSweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* ── Bouncing scroll arrow ─────────────────────────────────── */
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(0); opacity: 0.8; }
+  50%      { transform: translateY(10px); opacity: 1; }
+}
+
+/* ── Section wipe line ─────────────────────────────────────── */
+@keyframes wipeIn {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
 /* ── Reduce motion support ─────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

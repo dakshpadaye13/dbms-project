@@ -1,9 +1,30 @@
 /* ============================================================
-   EduQuest — Premium Animations v3 (Additive Layer)
-   ⚠ ADDITIVE ONLY — Does not override existing animations.css
+   EduQuest — Premium FX v4  (Cyberpunk Arcade)
+   ⚠ COMPLETE REWRITE — replaces v3
    ============================================================ */
 
-/* ── Custom Cursor ─────────────────────────────────────────── */
+/* ── Scroll Progress Bar ──────────────────────────────────── */
+#eq-scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, #a855f7, #22d3ee);
+  box-shadow: 0 0 8px #a855f7, 0 0 16px rgba(168,85,247,0.3);
+  z-index: 100000;
+  pointer-events: none;
+  transition: width 0.05s linear;
+}
+
+/* ── Floating Particles Canvas ────────────────────────────── */
+#eq-particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Custom Cursor ────────────────────────────────────────── */
 #eq-cursor-dot,
 #eq-cursor-ring {
   position: fixed;
@@ -14,36 +35,62 @@
   transition: opacity 0.3s ease;
 }
 #eq-cursor-dot {
-  width: 6px;
-  height: 6px;
-  background: #a78bfa;
-  box-shadow: 0 0 12px #a78bfa, 0 0 4px #7c3aed;
+  width: 8px;
+  height: 8px;
+  background: #22d3ee;
+  box-shadow: 0 0 12px #22d3ee, 0 0 4px #a855f7;
   transform: translate(-50%, -50%);
 }
 #eq-cursor-ring {
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid rgba(167, 139, 250, 0.55);
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(168, 85, 247, 0.55);
   background: transparent;
   transform: translate(-50%, -50%);
   transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 body.cursor-hover #eq-cursor-ring {
-  width: 48px;
-  height: 48px;
-  border-color: rgba(167, 139, 250, 0.9);
-  background: rgba(124, 58, 237, 0.08);
+  width: 60px;
+  height: 60px;
+  border-color: #22d3ee;
+  background: rgba(168, 85, 247, 0.06);
 }
 body.cursor-hover #eq-cursor-dot {
-  transform: translate(-50%, -50%) scale(1.8);
+  transform: translate(-50%, -50%) scale(1.6);
+}
+
+/* Cursor ghost trail dots */
+.eq-cursor-ghost {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.5);
+  pointer-events: none;
+  z-index: 999998;
+  will-change: transform, opacity;
+  transition: opacity 0.15s ease;
 }
 
 /* Hide on mobile/touch */
 @media (hover: none) {
-  #eq-cursor-dot, #eq-cursor-ring { display: none; }
+  #eq-cursor-dot, #eq-cursor-ring, .eq-cursor-ghost { display: none !important; }
 }
 
-/* ── GSAP Scroll-reveal base state ─────────────────────────── */
+/* ── Parallax Grid Background ─────────────────────────────── */
+#eq-parallax-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  will-change: transform;
+}
+
+/* ── GSAP Scroll-reveal base state ────────────────────────── */
 .gsap-reveal {
   opacity: 0;
   transform: translateY(36px);
@@ -65,12 +112,14 @@ body.cursor-hover #eq-cursor-dot {
   will-change: opacity, transform;
 }
 
-/* ── Parallax layers ───────────────────────────────────────── */
-.parallax-layer {
+/* ── Parallax layers ──────────────────────────────────────── */
+.parallax-layer,
+.hero-orb,
+.grid-bg {
   will-change: transform;
 }
 
-/* ── Enhanced button micro-interactions ────────────────────── */
+/* ── Enhanced button micro-interactions ───────────────────── */
 .btn {
   position: relative;
   overflow: hidden;
@@ -97,8 +146,8 @@ body.cursor-hover #eq-cursor-dot {
 .btn:active        { transform: scale(0.97); }
 .btn-primary:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.45),
-              0 0 0 3px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.45),
+              0 0 0 3px rgba(168, 85, 247, 0.15);
   filter: brightness(1.06);
 }
 .btn-secondary:hover,
@@ -107,7 +156,7 @@ body.cursor-hover #eq-cursor-dot {
   box-shadow: 0 6px 22px rgba(0,0,0,0.25);
 }
 
-/* ── Game card enhanced hover ──────────────────────────────── */
+/* ── Game card enhanced hover ─────────────────────────────── */
 .game-card {
   transition:
     transform  0.28s cubic-bezier(0.34, 1.2, 0.64, 1),
@@ -117,10 +166,10 @@ body.cursor-hover #eq-cursor-dot {
 .game-card:hover {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 20px 60px rgba(0,0,0,0.4),
-              0 0 0 1px rgba(124,58,237,0.2) !important;
+              0 0 0 1px rgba(168,85,247,0.2) !important;
 }
 
-/* ── Stat card entrance ────────────────────────────────────── */
+/* ── Stat card entrance ───────────────────────────────────── */
 .stat-card {
   transition:
     transform  0.3s cubic-bezier(0.34, 1.3, 0.64, 1),
@@ -131,7 +180,7 @@ body.cursor-hover #eq-cursor-dot {
   box-shadow: 0 16px 50px rgba(0,0,0,0.35);
 }
 
-/* ── Glass card enhanced ───────────────────────────────────── */
+/* ── Glass card enhanced ──────────────────────────────────── */
 .glass-card {
   transition:
     transform  0.3s cubic-bezier(0.34, 1.2, 0.64, 1),
@@ -139,25 +188,89 @@ body.cursor-hover #eq-cursor-dot {
     border-color 0.3s ease !important;
 }
 .glass-card:hover {
-  border-color: rgba(124, 58, 237, 0.35) !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
   box-shadow: 0 24px 60px rgba(0,0,0,0.4),
-              0 0 40px rgba(124,58,237,0.08) !important;
+              0 0 40px rgba(168,85,247,0.08) !important;
 }
 
-/* ── Section divider glow pulse ────────────────────────────── */
-@keyframes sectionGlowPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.2); opacity: 0.4; }
-  50%       { box-shadow: 0 0 60px rgba(124,58,237,0.5); opacity: 0.8; }
-}
-.section-divider-glow {
+/* ── Section divider wipe lines ───────────────────────────── */
+.section-wipe-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.6), rgba(59,130,246,0.6), transparent);
-  animation: sectionGlowPulse 4s ease-in-out infinite;
-  margin: 0;
+  width: 0%;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, #a855f7, #22d3ee, transparent);
   border: none;
+  box-shadow: 0 0 12px rgba(168,85,247,0.2);
 }
 
-/* ── Lenis smooth scroll ───────────────────────────────────── */
+/* ── Scroll-down hint ─────────────────────────────────────── */
+#eq-scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  transition: opacity 0.6s ease;
+}
+#eq-scroll-hint span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(192, 132, 252, 0.7);
+}
+#eq-scroll-hint .arrow {
+  font-size: 1.4rem;
+  color: #22d3ee;
+  animation: bounceArrow 1.8s ease-in-out infinite;
+}
+
+/* ── Horizontal scroll section ────────────────────────────── */
+.hscroll-section {
+  position: relative;
+  overflow: hidden;
+}
+.hscroll-track {
+  display: flex;
+  gap: 24px;
+  padding: 20px 0;
+  will-change: transform;
+}
+.hscroll-card {
+  flex: 0 0 340px;
+  min-height: 260px;
+}
+.hscroll-progress {
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  margin-top: 24px;
+  overflow: hidden;
+}
+.hscroll-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #a855f7, #22d3ee);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(168,85,247,0.4);
+}
+
+/* ── XP Bar shimmer sweep pseudo ──────────────────────────── */
+.progress-bar-fill.shimmer-active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: shimmerSweep 1.8s ease-in-out infinite;
+}
+
+/* ── Lenis smooth scroll ──────────────────────────────────── */
 html.lenis, html.lenis body {
   height: auto;
 }
@@ -168,7 +281,7 @@ html.lenis, html.lenis body {
   overscroll-behavior: contain;
 }
 
-/* ── Nav link hover underline ──────────────────────────────── */
+/* ── Nav link hover underline ─────────────────────────────── */
 .nav-link {
   position: relative;
 }
@@ -179,21 +292,44 @@ html.lenis, html.lenis body {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #7c3aed, #3b82f6);
+  background: linear-gradient(90deg, #a855f7, #22d3ee);
   border-radius: 2px;
   transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .nav-link:hover::after,
 .nav-link.active::after { width: 100%; }
 
-/* ── Hero section text shimmer ─────────────────────────────── */
+/* ── Hero section text shimmer ────────────────────────────── */
 .gradient-text {
   animation: shimmer 5s linear infinite;
   background-size: 250% auto;
 }
 
-/* ── Ambient floating orb pulse ────────────────────────────── */
+/* ── Ambient floating orb pulse ───────────────────────────── */
 .hero-orb {
   animation: morphBlob 12s ease-in-out infinite;
   will-change: border-radius;
+}
+
+/* ── Leaderboard top-3 left glow borders ──────────────────── */
+.lb-row.top-1 { border-left: 3px solid #fbbf24; box-shadow: -4px 0 16px rgba(251,191,36,0.2); }
+.lb-row.top-2 { border-left: 3px solid #94a3b8; box-shadow: -4px 0 16px rgba(148,163,184,0.15); }
+.lb-row.top-3 { border-left: 3px solid #b45309; box-shadow: -4px 0 16px rgba(180,83,9,0.15); }
+
+/* ── Mobile overrides ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  #eq-parallax-grid { display: none; }
+  #eq-scroll-hint { display: none; }
+
+  .hscroll-section {
+    overflow: visible !important;
+  }
+  .hscroll-track {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .hscroll-card {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
